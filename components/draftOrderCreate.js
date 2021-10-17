@@ -8,7 +8,7 @@ import { ResourcePicker } from '@shopify/app-bridge-react';
 import ResourceListProducts from "./ResourceListProducts";
 import { test } from "./ResourceListProducts"
 
-// GraphQL mutation that updates the prices of products
+// GraphQL mutation that updates the prices of produc
 const CREATE_ORDER = gql`
     mutation draftOrderCreate($input: DraftOrderInput!){
         draftOrderCreate(input: $input)
@@ -77,7 +77,7 @@ class DraftOrderCreate extends React.Component {
                                         onAction: () => this.setState({ open: true }),
                                     }}
                                     >
-                                    <ResourceListProducts />
+
                                 </EmptyState> 
                             </Card.Section>
                             <ResourcePicker

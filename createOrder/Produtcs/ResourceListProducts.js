@@ -6,9 +6,9 @@ import {
   ResourceList,
   Stack,
   TextStyle,
+  TextField,
+  SettingToggle,
   Thumbnail,
-  EmptyState,
-  TextField
 } from '@shopify/polaris';
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
@@ -31,11 +31,16 @@ const GET_PRODUCTS_BY_ID = gql`
             }
           }
         }
-        variants(first: 1) {
+        variants(first: 99) {
           edges {
             node {
-              price
               id
+              title
+              price
+              image {
+                altText
+                originalSrc
+                }
             }
           }
         }
@@ -44,11 +49,14 @@ const GET_PRODUCTS_BY_ID = gql`
   }
 `;
 
-
+var arraySeletedProducts = '';
+var arrayVariant = '';
+var arrayVariantSeleted = '';
 
 class ResourceListProducts extends React.Component {
   static contextType = Context;
-
+  state = { valueOne: "", open: false };
+  
   // A constructor that defines selected items and nodes
   constructor(props) {
     super(props);
@@ -64,59 +72,54 @@ class ResourceListProducts extends React.Component {
     // Returns products by ID
     return (
         <Query query={GET_PRODUCTS_BY_ID} variables={{ ids: store.get('ids') }}>
-          {({ data, loading, error, refetch }) => { // Refetches products by ID
+          {({ data, loading, error }) => { // Refetches products by ID
             if (loading) return <div>Loading…</div>;
             if (error) return <div>{error.message}</div>;
-
+            
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
 
-             
+            arraySeletedProducts = data.nodes.map(getIds);
+            function getIds(productsIds) {
+              return productsIds.id;
+            };
+
+            var firstObject = [];
+            for (let i = 0; i < arraySeletedProducts.length; i++) {
+              firstObject = firstObject.concat({id: arraySeletedProducts[i].toString()});
+            };
+
             return (
-                <Card title="Products">
-                <Card.Section>
-                    <TextField
-                        value = {this.state.valueOne}
-                        label="Quantity"
-                        onChange={(newValue) => this.setState({ valueOne: newValue })}
-                        autoComplete="off"
-                    />
-                </Card.Section>
-                <Card.Section fullWidth>
-                    <EmptyState
-                        fullWidth
-                        heading="Select products"
-                        action={{
-                            content: 'Select products',
-                            onAction: () => this.setState({ open: true }),
-                        }}
-                        >
-                    </EmptyState> 
-                </Card.Section>
-                <ResourcePicker
-                    resourceType="Product"
-                    showVariants={false}
-                    open={this.state.open}
-                    onSelection={(resources) => this.handleSelection(resources)}
-                    onCancel={() => this.setState({ open: false })}
-                    />
-            
-              <Card.Section fullWidth>
+            <Card>
+                  <SettingToggle
+                    heading="Select Products"
+                    action={{
+                      content: 'Browse',
+                      onAction: () => this.setState({ open: true }),
+                    }}
+                  >
+                  <TextField
+                      value = {this.state.valueOne}
+                      onChange={ () => this.setState({ open: true })
+                      }
+                      autoComplete="off"
+                  />
+                  </SettingToggle>
                   <ResourceList
                     showHeader
                     resourceName={{ singular: 'Product', plural: 'Products' }}
                     items={data.nodes}
-                    selectable
-                    selectedItems={this.state.selectedItems}
-                    onSelectionChange={selectedItems => {
-                      const selectedNodes = {};
-                      selectedItems.forEach(item => selectedNodes[item] = nodesById[item]);
+                    //selectable
+                    //  selectedItems={this.state.selectedItems}
+                    // onSelectionChange={selectedItems => {
+                    //   const selectedNodes = {};
+                    //   selectedItems.forEach(item => selectedNodes[item] = nodesById[item]);
 
-                      return this.setState({
-                        selectedItems: selectedItems,
-                        selectedNodes: selectedNodes,
-                      });
-                    }}
+                    //   return this.setState({
+                    //     selectedItems: selectedItems,
+                    //     selectedNodes: selectedNodes,
+                    //   });
+                    // }}
                     renderItem={item => {
                       const media = (
                         <Thumbnail
@@ -133,31 +136,14 @@ class ResourceListProducts extends React.Component {
                         />
                       );
                       const price = item.variants.edges[0].node.price;
-                      
                       return (
                         <ResourceList.Item
                           id={item.id}
                           media={media}
                           accessibilityLabel={`View details for ${item.title}`}
-                          verticalAlignment="left"
-                          onClick={() => {
-                            let index = this.state.selectedItems.indexOf(item.id);
-                            const node = nodesById[item.id];
-                            if (index === -1) {
-                                this.state.selectedItems.push(item.id);
-                                this.state.selectedNodes[item.id] = node;
-                            } else {
-                              this.state.selectedItems.splice(index, 1);
-                                delete this.state.selectedNodes[item.id];
-                            }
-                            
-                            this.setState({
-                              selectedItems: this.state.selectedItems,
-                              selectedNodes: this.state.selectedNodes,
-                              });
-                          }}
-                          
+                          verticalAlignment="center"
                         >
+                          
                           <Stack alignment="right">
                             <Stack.Item fill>
                               <h3>
@@ -174,7 +160,16 @@ class ResourceListProducts extends React.Component {
                       );
                     }}
                   />
-                </Card.Section>
+                  <ResourcePicker
+                    resourceType="Product"
+                    showVariants={true}
+                    open={this.state.open}
+                    onSelection={(resources) => this.handleSelection(resources)}
+                    onCancel={() => this.setState({ open: false })}
+                    initialSelectionIds={
+                      firstObject
+                    }
+                  />
             </Card>    
           );
         }}
@@ -187,6 +182,6 @@ class ResourceListProducts extends React.Component {
     store.set('ids', idsFromResources);
   };
 }
-const test = store.get('ids');
+const test = store.set('ids');;
 export default  ResourceListProducts;
 export { test }

@@ -5,8 +5,8 @@ import { Layout, Button, Banner, Toast, Frame, FormLayout, TextField, Card, Empt
 import { Context } from '@shopify/app-bridge-react';
 import store from 'store-js';
 import { ResourcePicker } from '@shopify/app-bridge-react';
-import ResourceListProducts from "./ResourceListProducts";
-import { test } from "./ResourceListProducts"
+import ResourceListProducts from "./Produtcs/ResourceListProducts";
+import { test } from "./Produtcs/ResourceListProducts"
 
 // GraphQL mutation that updates the prices of products
 const CREATE_ORDER = gql`

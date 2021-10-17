@@ -11,8 +11,7 @@ import RecipientReferentName from '../createOrder/RecipientReferentName';
 import DeliveryDate from '../createOrder/DeliveryDate';
 import PickUpDate from '../createOrder/PickUpDate';
 import CardMessage from '../createOrder/CardMessage';
-import ResourceListProducts from '../createOrder/ResourceListProducts';
-import { test } from "../createOrder/ResourceListProducts"
+import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
 
 //import OrderCreate from '../components/CreateOrder';
 const CREATE_ORDER = gql`
@@ -85,7 +84,7 @@ class order extends React.Component {
             </div>
           </Layout.Section>
           <Layout.Section>
-          <ResourceListProducts />
+          <EmptyStateProducts />
           </Layout.Section>
           <Layout.Section secondary>
             <CardMessage />

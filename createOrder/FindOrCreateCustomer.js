@@ -9,7 +9,7 @@ export default class FindOrCreateOrder extends React.Component {
           <TextStyle variation="subdued">455 units available</TextStyle>
         </Card.Section>
         <Card.Section title="Items">
-          <ResourceList
+          {/* <ResourceList
             resourceName={{singular: 'product', plural: 'products'}}
             items={[
               {
@@ -44,7 +44,7 @@ export default class FindOrCreateOrder extends React.Component {
                 </ResourceList.Item>
               );
             }}
-          />
+          /> */}
         </Card.Section>
       </Card>
         );
