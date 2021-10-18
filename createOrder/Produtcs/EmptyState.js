@@ -39,9 +39,19 @@ class EmptyStateProducts extends React.Component {
     );
   }
   handleSelection = (resources) => {
-    const idsFromResources = resources.selection.map((product) => product.id);
+    //const idsFromResources = resources.selection.map((product) => product.id);
+    const idsFromVariantResources = resources.selection.map(( product ) => product.variants);
+    var idsFromVariantResources2 = [];
+    var idsFromVariantResources3 = [];
+    for (let i = 0; i < idsFromVariantResources.length; i++) {
+      idsFromVariantResources2 = idsFromVariantResources2.concat(idsFromVariantResources[i]);
+      for (let j = 0; j < idsFromVariantResources[i].length; j++){
+        idsFromVariantResources3 = idsFromVariantResources3.concat(idsFromVariantResources[i][j].id);
+      }
+    };
     this.setState({ open: false });
-    store.set('ids', idsFromResources);
+    store.set('ids', idsFromVariantResources3);
+    
   };
 }
 

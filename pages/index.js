@@ -12,7 +12,7 @@ class Index extends React.Component {
   state = { open: false };
   render() {
     // A constant that defines your app's empty state
-    const emptyState = !store.get('ids');
+    const emptyState = !store.get('idsRandom');
     return (
       <Page>
         <TitleBar
@@ -51,7 +51,7 @@ class Index extends React.Component {
   handleSelection = (resources) => {
     const idsFromResources = resources.selection.map((product) => product.id);
     this.setState({ open: false });
-    store.set('ids', idsFromResources);
+    store.set('idsRandom', idsFromResources);
   };
 }
 

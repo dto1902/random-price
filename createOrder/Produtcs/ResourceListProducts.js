@@ -9,6 +9,7 @@ import {
   TextField,
   SettingToggle,
   Thumbnail,
+  Link,
 } from '@shopify/polaris';
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
@@ -22,6 +23,7 @@ query getProductsVariants($ids: [ID!]!) {
       id
       price
       title
+      sku
       image {
         altText
         originalSrc
@@ -29,6 +31,7 @@ query getProductsVariants($ids: [ID!]!) {
       product {
         id
         title
+        onlineStorePreviewUrl
         images(first: 1) {
           edges {
             node {
@@ -87,8 +90,6 @@ class ResourceListProducts extends React.Component {
             for (let i = 0; i < arraySeletedProducts.length; i++) {
               firstObject = firstObject.concat({id: arraySeletedProducts[i].toString(), variants: [{id: arraySeletedVariants[i].toString()}] });
             };
-            console.log(arraySeletedVariants);
-            
             return (
             <Card>
                   <SettingToggle
@@ -121,7 +122,7 @@ class ResourceListProducts extends React.Component {
                     //   });
                     // }}
                     renderItem={item => {
-                      if ( item.image === null) {
+                      if ( item.image === null ) {
                         if ( item.product.images.edges[0] !== undefined ){
                           var media = (
                             <Thumbnail
@@ -169,31 +170,60 @@ class ResourceListProducts extends React.Component {
                         />
                       );
                     };
-                      if ( item.title === 'Default Title') {
-                        var title = item.product.title;
+                      if ( item.title === 'Default Title' || item.title === 'default title') {
+                        var titleProduct = item.product.title;
+                        var titleVariant = '';
                       } else {
-                        var title = item.title;
+                        var titleProduct = item.product.title;
+                        var titleVariant = item.title;
                       };
                       const price = item.price;
                       return (
                         <ResourceList.Item
                           id={item.id}
                           media={media}
-                          accessibilityLabel={`View details for ${item.title}`}
+                          accessibilityLabel={`View details for ${titleProduct}`}
                           verticalAlignment="center"
                         >
                           
-                          <Stack alignment="right">
+                          <Stack distribution="fillEvenly" spacing="extraLoose">
                             <Stack.Item fill>
                               <h3>
-                                <TextStyle variation="strong">
-                                  {title}
+                                <TextStyle>
+                                <Link url={item.product.onlineStorePreviewUrl} external>{titleProduct}</Link>
+                                  {/* <a target="_blank" href={item.product.onlineStorePreviewUrl}>{titleProduct}</a> */}
+                                </TextStyle>
+                              </h3>
+                              <h3>
+                                <TextStyle>
+                                  {titleVariant}
+                                </TextStyle>
+                              </h3>
+                              <h3>
+                                <TextStyle>
+                                  {item.sku}
+                                </TextStyle>
+                              </h3>
+                              <h3>
+                                <TextStyle>
+                                  {price}
                                 </TextStyle>
                               </h3>
                             </Stack.Item>
+                            <Stack.Item >
+                              <div style={{width: 50 + '%', float: 'right'}}>
+                            <TextField
+                                    value = {this.state.quantity}
+                                    type="number"
+                                    onChange={(newValue) => this.setState({ quantity: newValue })}
+                                />
+                                </div>
+                            </Stack.Item>
+                            <div style={{float: 'left'}}>
                             <Stack.Item>
                               <p>{price}</p>
                             </Stack.Item>
+                            </div>
                           </Stack>
                         </ResourceList.Item>
                       );
@@ -225,7 +255,6 @@ class ResourceListProducts extends React.Component {
         idsFromVariantResources3 = idsFromVariantResources3.concat(idsFromVariantResources[i][j].id);
       }
     };
-    //console.log(idsFromVariantResources3);
     this.setState({ open: false });
     store.set('ids', idsFromVariantResources3);
     

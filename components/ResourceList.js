@@ -60,7 +60,7 @@ class ResourceListWithProducts extends React.Component {
 
     // Returns products by ID
     return (
-        <Query query={GET_PRODUCTS_BY_ID} variables={{ ids: store.get('ids') }}>
+        <Query query={GET_PRODUCTS_BY_ID} variables={{ ids: store.get('idsRandom') }}>
           {({ data, loading, error, refetch }) => { // Refetches products by ID
             if (loading) return <div>Loading…</div>;
             if (error) return <div>{error.message}</div>;
