@@ -45,8 +45,7 @@ query getProductsVariants($ids: [ID!]!) {
 `;
 
 var arraySeletedProducts = '';
-var arrayVariant = '';
-var arrayVariantSeleted = '';
+var arraySeletedVariants = '';
 
 class ResourceListProducts extends React.Component {
   static contextType = Context;
@@ -74,15 +73,21 @@ class ResourceListProducts extends React.Component {
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
 
-            arraySeletedProducts = data.nodes.map(getIds);
-            function getIds(productsIds) {
-              return productsIds.id;
+            arraySeletedVariants = data.nodes.map(getIdsVariants);
+            function getIdsVariants(variantsIds) {
+              return variantsIds.id ;
+            };
+
+            arraySeletedProducts = data.nodes.map(getIdsProducts);
+            function getIdsProducts(productsIds) {
+              return productsIds.product.id ;
             };
 
             var firstObject = [];
             for (let i = 0; i < arraySeletedProducts.length; i++) {
-              firstObject = firstObject.concat({id: arraySeletedProducts[i].toString()});
+              firstObject = firstObject.concat({id: arraySeletedProducts[i].toString(), variants: [{id: arraySeletedVariants[i].toString()}] });
             };
+            console.log(arraySeletedVariants);
             
             return (
             <Card>
@@ -117,20 +122,37 @@ class ResourceListProducts extends React.Component {
                     // }}
                     renderItem={item => {
                       if ( item.image === null) {
-                        var media = (
-                          <Thumbnail
-                            source={
-                              item.product.images.edges[0].node
-                                ? item.product.images.edges[0].node.originalSrc
-                                : ''
-                            }
-                            alt={
-                              item.product.images.edges[0].node
-                                ? item.product.images.edges[0].node.altText
-                                : ''
-                            }
-                          />
-                        )
+                        if ( item.product.images.edges[0] !== undefined ){
+                          var media = (
+                            <Thumbnail
+                              source={
+                                item.product.images.edges[0].node
+                                  ? item.product.images.edges[0].node.originalSrc
+                                  : ''
+                              }
+                              alt={
+                                item.product.images.edges[0].node
+                                  ? item.product.images.edges[0].node.altText
+                                  : ''
+                              }
+                            />
+                          )
+                        } else {
+                          var media = (
+                            <Thumbnail
+                              source={
+                                item.image
+                                  ? item.image.originalSrc
+                                  : ''
+                              }
+                              alt={
+                                item.image
+                                  ? item.image.altText
+                                  : ''
+                              }
+                            />
+                          );
+                        }
                       } else {
                       var media = (
                         <Thumbnail
@@ -182,9 +204,9 @@ class ResourceListProducts extends React.Component {
                     open={this.state.open}
                     onSelection={(resources) => this.handleSelection(resources)}
                     onCancel={() => this.setState({ open: false })}
-                    // initialSelectionIds={
-                    //   firstObject
-                    // }
+                    initialSelectionIds={
+                      firstObject
+                    }
                   />
             </Card>    
           );
