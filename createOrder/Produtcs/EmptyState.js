@@ -14,7 +14,7 @@ class EmptyStateProducts extends React.Component {
         <Card.Section>
         <ResourcePicker
           resourceType="Product"
-          showVariants={false}
+          showVariants={true}
           open={this.state.open}
           onSelection={(resources) => this.handleSelection(resources)}
           onCancel={() => this.setState({ open: false })}
