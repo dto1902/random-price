@@ -98,35 +98,6 @@ class order extends React.Component {
           <Layout.Section>
             <CardMessage />
           </Layout.Section>
-          <Layout.Section>
-            <div style={{textAlign:"center"}}>
-              <Card>
-              <Card.Section>
-                <Button
-                  primary
-                  textAlign={"center"}
-                  onClick={() => {
-                  let promise = new Promise((resolve) => resolve());
-                  let draftOrderInput = {
-                      lineItems: [
-                          {
-                              variantId: "gid://shopify/ProductVariant/41238505095331",
-                              quantity: 1,
-                          }
-                      ]
-                  }
-                  promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
-                                   .then(response => {console.log(response)});
-                  console.log(this.props.selectedItems);
-                }
-                }
-                >
-                  Create Order
-                </Button>
-                </Card.Section>
-              </Card>
-            </div>
-          </Layout.Section>
         </Layout>
       </Page>
     );

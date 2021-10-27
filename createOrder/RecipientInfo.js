@@ -1,52 +1,46 @@
 import React from 'react';
-import {TextStyle, Card, ResourceList, Thumbnail} from '@shopify/polaris';
+import {Avatar, Card, ResourceItem, ResourceList, TextStyle} from '@shopify/polaris';
 
 export default class RecipientInfo extends React.Component {
   render() {
     return (
-            <Card title="Recipeint Info" actions={[{content: 'Manage'}]}>
-            <Card.Section>
-              <TextStyle variation="subdued">301 units available</TextStyle>
-            </Card.Section>
-            <Card.Section title="Items">
-              <ResourceList
-                resourceName={{singular: 'product', plural: 'products'}}
-                items={[
-                  {
-                    id: 259,
-                    url: 'produdcts/259',
-                    name: 'Tucan scarf',
-                    sku: '9234194010',
-                    quantity: '201',
-                    media: (
-                      <Thumbnail
-                        source="https://burst.shopifycdn.com/photos/tucan-scarf_373x@2x.jpg"
-                        alt="Tucan scarf"
-                      />
-                    ),
-                  },
-                ]}
-                renderItem={(item) => {
-                  const {id, url, name, sku, media, quantity} = item;
+      <Card>
+  <ResourceList
+    resourceName={{singular: 'customer', plural: 'customers'}}
+    items={[
+      {
+        id: 100,
+        url: 'customers/341',
+        name: 'Mae Jemison',
+        location: 'Decatur, USA',
+      },
+      {
+        id: 200,
+        url: 'customers/256',
+        name: 'Ellen Ochoa',
+        location: 'Los Angeles, USA',
+      },
+    ]}
+    renderItem={(item) => {
+      const {id, url, name, location} = item;
+      const media = <Avatar customer size="medium" name={name} />;
 
-                  return (
-                    <ResourceList.Item
-                      id={id}
-                      url={url}
-                      media={media}
-                      accessibilityLabel={`View details for ${name}`}
-                    >
-                      <h3>
-                        <TextStyle variation="strong">{name}</TextStyle>
-                      </h3>
-                      <div>SKU: {sku}</div>
-                      <div>{quantity} available</div>
-                    </ResourceList.Item>
-                  );
-                }}
-              />
-            </Card.Section>
-          </Card>
-        );
-    }
+      return (
+        <ResourceItem
+          id={id}
+          url={url}
+          media={media}
+          accessibilityLabel={`View details for ${name}`}
+        >
+          <h3>
+            <TextStyle variation="strong">{name}</TextStyle>
+          </h3>
+          <div>{location}</div>
+        </ResourceItem>
+      );
+    }}
+  />
+</Card>
+    );
+  }
 }
