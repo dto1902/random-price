@@ -77,6 +77,7 @@ function ResourceListProducts() {
             data.nodes.forEach(node => nodesById[node.id] = node);
 
             var arraySeletedProducts = '', arraySeletedVariants = '';
+
             arraySeletedVariants = data.nodes.map(getIdsVariants);
             function getIdsVariants(variantsIds) {
               return variantsIds.id ;
@@ -228,6 +229,7 @@ function ResourceListProducts() {
                   }
                   onSelectionChange={handleSelectionChange}
                   promotedBulkActions={promotedBulkActions}
+                  selectable={false}
                   headings={[
                     {title: ''},
                     {title: 'Title'},
@@ -253,4 +255,5 @@ function ResourceListProducts() {
     );
 
 }
+//console.log({id})
 export { ResourceListProducts }

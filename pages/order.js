@@ -3,7 +3,6 @@ import gql from 'graphql-tag';
 import { Mutation } from 'react-apollo';
 import { Page, Layout, Button, Banner, Toast, Frame, FormLayout, TextField, Card, EmptyState } from '@shopify/polaris';
 import { Context } from '@shopify/app-bridge-react';
-import store from 'store-js';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
 import FindOrCreateOrder from '../createOrder/FindOrCreateCustomer'
 import RecipientInfo from '../createOrder/RecipientInfo';
@@ -98,6 +97,30 @@ class order extends React.Component {
           <Layout.Section>
             <CardMessage />
           </Layout.Section>
+          <Layout.Section>
+          <Button
+            primary
+            textAlign={"center"}
+            onClick={() => {
+            let promise = new Promise((resolve) => resolve());
+
+            let draftOrderInput = {
+                lineItems: [
+                    {
+                      DraftOrderLineItemInput
+                    }
+                ]
+            }
+            promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
+                .then(response => {console.log(response)});
+
+                console.log(this.props.selectedItems);
+            }
+            }
+            >
+                Create Order
+          </Button>
+          </Layout.Section>
         </Layout>
       </Page>
     );
@@ -105,11 +128,6 @@ class order extends React.Component {
   </Mutation>
   );
   }
-  handleSelection = (resources) => {
-    const idsFromResources = resources.selection.map((product) => product.id);
-    this.setState({ open: false });
-    store.set('ids', idsFromResources);
-  };
 }
 
 export default order;
