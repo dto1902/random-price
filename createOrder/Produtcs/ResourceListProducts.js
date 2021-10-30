@@ -108,7 +108,6 @@ function ResourceListProducts() {
             };
 
             const products = [data.nodes];
-            console.log(products)
             const resourceName = {
               singular: 'product',
               plural: 'products',
@@ -255,5 +254,4 @@ function ResourceListProducts() {
     );
 
 }
-//console.log({id})
 export { ResourceListProducts }

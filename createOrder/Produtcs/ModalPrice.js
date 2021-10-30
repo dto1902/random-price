@@ -3,18 +3,45 @@ import {Button, Modal, TextContainer, Select, TextField, Layout} from '@shopify/
 
 export default function ModalPrice(prop) {
   const [active, setActive] = useState(false);
-  const [selected, setSelected] = useState('today');
-  const [value, setValue] = useState('');
+  const [selected, setSelected] = useState('Amount');
+  const [valueDiscount, setValueDiscount] = useState('');
   const [valueReason, setValueReason] = useState('');
-  const handleSelectChange = useCallback((value) => setSelected(value), []);
-  const handleChange = useCallback(() => setActive(!active), [active]);
-  const activator = <Button plain onClick={handleChange}>{prop.price}</Button>;
+
+  const handleChange = useCallback(() => {
+    setActive(!active), [active]
+  });
+  const handleApply = useCallback(() => {
+    console.log(selected)
+    console.log(valueDiscount)
+    console.log(valueReason)
+    setSelected('Amount')
+    setValueDiscount('')
+    setValueReason('')
+    setActive(!active), [active]
+  });
+  const selectedChange = useCallback((value) => {
+    setSelected(value), []
+    //console.log(value)
+  });
+  const activator = 
+    <Button 
+      plain 
+        onClick={handleChange}
+    >
+      {prop.price}
+    </Button>;
   const options = [
     {label: 'Amount', value: 'amount'},
     {label: 'Percentage', value: 'percentage'},
   ];
-  const handleChangeDiscountValue = useCallback((newValue) => setValue(newValue), []);
-  const handleChangeReason = useCallback((newValue) => setValue(newValue), []);
+  const ChangeDiscountValue = useCallback((newValue) => {
+    setValueDiscount(newValue), []
+    //console.log(newValue)
+  });
+  const ChangeReason = useCallback((newValue) => {
+    setValueReason(newValue), []
+    //console.log(newValue)
+  });
   return (
       <Modal
         activator={activator}
@@ -22,8 +49,8 @@ export default function ModalPrice(prop) {
         onClose={handleChange}
         title="Add discount"
         primaryAction={{
-          content: 'Aply',
-          onAction: handleChange,
+          content: 'Apply',
+          onAction: handleApply,
         }}
         secondaryActions={[
           {
@@ -39,7 +66,7 @@ export default function ModalPrice(prop) {
                 <Select
                     label="Date range"
                     options={options}
-                    onChange={handleSelectChange}
+                    onChange={selectedChange}
                     value={selected}
                 />
             </Layout.Section>
@@ -48,8 +75,8 @@ export default function ModalPrice(prop) {
             <Layout.Section oneHalf>
                 <TextField
                     label="Discount value"
-                    value={value}
-                    onChange={handleChangeDiscountValue}
+                    value={valueDiscount}
+                    onChange={ChangeDiscountValue}
                     autoComplete="off"
                 />
             </Layout.Section>
@@ -58,7 +85,7 @@ export default function ModalPrice(prop) {
                 <TextField
                     label="Reason"
                     value={valueReason}
-                    onChange={handleChangeReason}
+                    onChange={ChangeReason}
                     autoComplete="off"
                     helpText="Your customers can see this reason"
                 />
