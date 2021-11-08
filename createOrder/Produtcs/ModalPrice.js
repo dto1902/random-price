@@ -1,49 +1,83 @@
 import React, {useCallback, useState} from 'react';
-import {Button, Modal, TextContainer, Select, TextField, Layout} from '@shopify/polaris';
+import {Button, Modal, FormLayout, Select, TextStyle, TextField} from '@shopify/polaris';
 
-export default function ModalPrice(prop) {
+var discountObject = [], priceWithDiscount = 0;
+function ModalPrice(props) {
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState('Amount');
-  const [valueDiscount, setValueDiscount] = useState('');
-  const [valueReason, setValueReason] = useState('');
+  const [valueDiscount, setValueDiscount] = useState(0);
+  const [valueReason, setValueReason] = useState('test');
+  
+  
 
-  const handleChange = useCallback(() => {
-    setActive(!active), [active]
-  });
+  const handleChange = useCallback(() => { setActive(!active), [active] });
   const handleApply = useCallback(() => {
-    console.log(selected)
-    console.log(valueDiscount)
-    console.log(valueReason)
+    if(selected === 'Amount') {
+      let price = props.price;
+      price = parseFloat(price) - parseFloat(valueDiscount);
+      if (price <= 0 ) {
+        props.setPriceDiscount('0')
+      } else {
+        props.setPriceDiscount(price.toFixed(2))
+      }
+    } else {
+      let price = props.price;
+      price = parseFloat(price) - (parseFloat(price) * (parseFloat(valueDiscount) / 100));
+      if (price <= 0 ) {
+        props.setPriceDiscount('0')
+      } else {
+        props.setPriceDiscount(price.toFixed(2))
+      }
+    }
+    var arrayDiscountObject = discountObject.map((idsDiscounts) => {return idsDiscounts.id});
+    var indiceVariantId = arrayDiscountObject.findIndex(ind => ind.toString() === props.id.toString());
+
+    if (indiceVariantId !== -1) {
+      discountObject[indiceVariantId] ={
+        "id": props.id,
+        "type": selected,
+        "value": valueDiscount,
+        "reason": valueReason
+      }
+    } else {
+      discountObject = discountObject.concat({
+        "id": props.id,
+        "type": selected,
+        "value": valueDiscount,
+        "reason": valueReason
+      })
+    }
     setSelected('Amount')
     setValueDiscount('')
     setValueReason('')
     setActive(!active), [active]
   });
-  const selectedChange = useCallback((value) => {
-    setSelected(value), []
-    //console.log(value)
-  });
+  const selectedChange = useCallback((value) => setSelected(value), []);
+  
   const activator = 
     <Button 
       plain 
-        onClick={handleChange}
+      onClick={handleChange}
     >
-      {prop.price}
+      {props.priceDiscount}
     </Button>;
+
   const options = [
-    {label: 'Amount', value: 'amount'},
-    {label: 'Percentage', value: 'percentage'},
+    {label: 'Amount', value: 'FIXED_AMOUNT'},
+    {label: 'Percentage', value: 'PERCENTAGE'},
   ];
   const ChangeDiscountValue = useCallback((newValue) => {
     setValueDiscount(newValue), []
-    //console.log(newValue)
   });
   const ChangeReason = useCallback((newValue) => {
     setValueReason(newValue), []
-    //console.log(newValue)
   });
+  if (props.price !== props.priceDiscount) {
+    var newPrice = ` ${props.price}`
+  }
   return (
-      <Modal
+    <p style={{display: 'flex'}}>
+    <Modal
         activator={activator}
         open={active}
         onClose={handleChange}
@@ -54,44 +88,44 @@ export default function ModalPrice(prop) {
         }}
         secondaryActions={[
           {
-            content: 'Cancel',
+            content: 'Discard',
             onAction: handleChange,
           },
         ]}
       >
         <Modal.Section>
-        <Layout>
-            <div style={{width: '50' + '%'}}>
-            <Layout.Section oneHalf>
+        <FormLayout>
+            <FormLayout.Group>
                 <Select
-                    label="Date range"
+                    id="typeDiscount"
+                    label="Type Discount"
                     options={options}
                     onChange={selectedChange}
                     value={selected}
                 />
-            </Layout.Section>
-            </div>
-            <div style={{width: '50' + '%'}}>
-            <Layout.Section oneHalf>
                 <TextField
+                    id="valueDiscount"
                     label="Discount value"
                     value={valueDiscount}
                     onChange={ChangeDiscountValue}
                     autoComplete="off"
                 />
-            </Layout.Section>
-            </div>
-            <Layout.Section>
+            </FormLayout.Group>
+            <FormLayout.Group>
                 <TextField
+                    id="valueReason"
                     label="Reason"
                     value={valueReason}
                     onChange={ChangeReason}
                     autoComplete="off"
                     helpText="Your customers can see this reason"
                 />
-            </Layout.Section>
-        </Layout>
+            </FormLayout.Group>
+        </FormLayout>
         </Modal.Section>
       </Modal>
+      <span style={{textDecoration: "line-through", paddingLeft: '6' + '%', fontSize: '1.4' + 'rem', fontWeight: '400'}}>{newPrice}</span>
+    </p>
   );
 }
+export { ModalPrice, discountObject }

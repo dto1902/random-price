@@ -1,3 +1,5 @@
-.stackItem {
-    color: brown;
+.inputQty {
+    width: 100%;
+    background: cadetblue;
+    color: red;
 }

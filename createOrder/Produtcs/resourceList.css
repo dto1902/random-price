@@ -1,0 +1,27 @@
+.inputQty { 
+    font-size:1.6rem; 
+    font-weight:400; 
+    line-height:2.4rem; 
+    /* border:none;  */
+    text-transform:initial; 
+    letter-spacing:initial; 
+    position:relative; 
+    z-index:20; 
+    display:block; 
+    flex:1 1; 
+    width:100%; 
+    min-width:0; 
+    min-height:3.6rem; 
+    margin:0; 
+    padding:0.5rem 1.2rem; 
+    background:none; 
+    border:0.1rem solid transparent; 
+    font-family:inherit; 
+    font-size:inherit; 
+    font-weight:inherit; 
+    -webkit-appearance:none; 
+    -moz-appearance:none; 
+    appearance:none; 
+    caret-color:var(--p-text); 
+    color:var(--p-text); 
+}

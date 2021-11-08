@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import gql from 'graphql-tag';
+import { CREATE_ORDER } from '../createOrder/Produtcs/GraphQl/MutaionCreateDraftOrder'
 import { Mutation } from 'react-apollo';
 import { Page, Layout, Button, Banner, Toast, Frame, FormLayout, TextField, Card, EmptyState } from '@shopify/polaris';
+import store from 'store-js';
 import { Context } from '@shopify/app-bridge-react';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
 import FindOrCreateOrder from '../createOrder/FindOrCreateCustomer'
@@ -11,27 +12,16 @@ import DeliveryDate from '../createOrder/DeliveryDate';
 import PickUpDate from '../createOrder/PickUpDate';
 import CardMessage from '../createOrder/CardMessage';
 import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
+import { discountObject } from '../createOrder/Produtcs/ModalPrice'
 
-//import OrderCreate from '../components/CreateOrder';
-const CREATE_ORDER = gql`
-    mutation draftOrderCreate($input: DraftOrderInput!){
-        draftOrderCreate(input: $input)
-        {
-        draftOrder {
-            id
-        }
-        userErrors {
-            message
-        }
-        }
-    }
-`;
-class order extends React.Component {
+function Order () {
+  const [valueBrowse, setValueBrowse] = useState('');
+  const [open, setOpen] = useState(false);
+  const [resourcesIds, setResourcesIds] = useState({ids: store.get('ids')});
 
-  static contextType = Context;
-  state = { valueOne: 0, open: false };
+var DraftOrderLineItemInput = [];
+var inputQty = 1;
 
-  render() {
 
     return ( // Uses mutation's input to update product prices
     <Mutation mutation={CREATE_ORDER}>
@@ -56,7 +46,7 @@ class order extends React.Component {
             {showError}
         </Layout.Section> */}
         <Layout>
-          <Layout.Section fullWidth>
+          {/* <Layout.Section fullWidth>
             <Card>
               <Card.Section>
                 <OrderTypeButtons />
@@ -96,27 +86,43 @@ class order extends React.Component {
           </Layout.Section>
           <Layout.Section>
             <CardMessage />
+          </Layout.Section> */}
+          <Layout.Section>
+            <EmptyStateProducts
+              open={open}
+              setOpen={setOpen}
+              valueBrowse={valueBrowse}
+              setValueBrowse={setValueBrowse}
+              resourcesIds={resourcesIds}
+              setResourcesIds={setResourcesIds}
+            />
           </Layout.Section>
           <Layout.Section>
           <Button
             primary
             textAlign={"center"}
             onClick={() => {
-            let promise = new Promise((resolve) => resolve());
+              DraftOrderLineItemInput = [];
+              for( let i = 0; i < resourcesIds.ids.length; i++) {
+                inputQty = document.getElementById('id:' + resourcesIds.ids[i]).value;
+                console.log(discountObject);
+                DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
+                  "variantId": resourcesIds.ids[i],
+                  "quantity":  parseInt(inputQty),
+                })
+              }
+              console.log(DraftOrderLineItemInput)
+              // let promise = new Promise((resolve) => resolve());
 
-            let draftOrderInput = {
-                lineItems: [
-                    {
-                      DraftOrderLineItemInput
-                    }
-                ]
-            }
-            promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
-                .then(response => {console.log(response)});
+              // let draftOrderInput = {
+              //     lineItems: 
+              //       DraftOrderLineItemInput
+              // }
+              // promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
+              //     .then(response => {console.log(response)});
 
-                console.log(this.props.selectedItems);
-            }
-            }
+              }
+              }
             >
                 Create Order
           </Button>
@@ -127,7 +133,6 @@ class order extends React.Component {
   }}
   </Mutation>
   );
-  }
 }
 
-export default order;
+export default Order;

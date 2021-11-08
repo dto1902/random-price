@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import {
@@ -17,8 +17,8 @@ import {
 } from '@shopify/polaris';
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
-import ModalPrice from './ModalPrice.js'
-import { NumberFieldExample } from './InputQuantity'
+import { ModalPrice } from './ModalPrice.js'
+import { ValueQuantity } from './InputQuantity'
 
 // GraphQL query that retrieves products by ID
 const GET_PRODUCTS_BY_ID = gql`
@@ -51,7 +51,6 @@ query getProductsVariants($ids: [ID!]!) {
           }
         }
       }
-
     }
   }
   shop {
@@ -60,19 +59,15 @@ query getProductsVariants($ids: [ID!]!) {
 }
 `;
 
-function ResourceListProducts() {
-
-  const [valueBrowse, setValueBrowse] = useState('');
-  const [open, setOpen] = useState(false);
-  const [resourcesIds, setresourcesIds] = useState({ids: store.get('ids')});
+function ResourceListProducts(props) {
   const {selectedResources, allResourcesSelected, handleSelectionChange} = useIndexResourceState([]);
 
     return (
-        <Query query={GET_PRODUCTS_BY_ID} variables={ resourcesIds }>
-          {({ data, loading, error, refetch }) => { // Refetches products by ID
-            if (loading) return <div>Loading…</div>;
+        <Query query={GET_PRODUCTS_BY_ID} variables={ props.resourcesIds }>
+          {({ data, loading, error }) => { // Refetches products by ID
+            if (loading) return 'Loading...';
             if (error) return <div>{error.message}</div>;
-            
+
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
 
@@ -102,9 +97,9 @@ function ResourceListProducts() {
                   var idsFromVariantResources3 = idsFromVariantResources3.concat(idsFromVariantResources[i][j].id);
                 }
               };
-              setOpen(false);
+              props.setOpen(false);
               store.set('ids', idsFromVariantResources3)
-              setresourcesIds({'ids': idsFromVariantResources3})
+              props.setResourcesIds({'ids': idsFromVariantResources3})
             };
 
             const products = [data.nodes];
@@ -171,28 +166,31 @@ function ResourceListProducts() {
                         id={id} 
                         key={id}
                         selected={selectedResources.includes(id).val}
-                        index= {resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
+                        index= {props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
                       >
                         <IndexTable.Cell>{media}</IndexTable.Cell>
-                        <IndexTable.Cell>
-                          <p><TextStyle><Link url={onlyproductid} external={true}>{titleProduct}</Link></TextStyle></p>
-                          <p><TextStyle>{titleVariant}</TextStyle></p>
-                          <p><TextStyle>{sku}</TextStyle></p>
-                          <TextStyle><ModalPrice price={price}/></TextStyle>
-                        </IndexTable.Cell>
-                        <IndexTable.Cell><NumberFieldExample max={max} id={id}/></IndexTable.Cell>
-                        <IndexTable.Cell>{price}</IndexTable.Cell>
+                          <ValueQuantity 
+                            max={max} 
+                            id={id} 
+                            titleProduct={titleProduct}
+                            price={price}
+                            onlyproductid={onlyproductid}
+                            title={titleVariant}
+                            sku={sku}
+                            resourcesIds={props.resourcesIds}
+                            setResourcesIds={props.setResourcesIds}
+                          />
                         <IndexTable.Cell>
                           <Button
                             plain
                             variation="strong"
                             onClick={() => {
-                              var indiceVariantId = resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
+                              var indiceVariantId = props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
                               var positionIndVariantId = parseInt(indiceVariantId);
-                              resourcesIds.ids.splice( positionIndVariantId, 1);
+                              props.resourcesIds.ids.splice( positionIndVariantId, 1);
                               data.nodes.splice( positionIndVariantId, 1);
-                              store.set('ids', resourcesIds.ids)
-                              setresourcesIds({'ids': resourcesIds.ids})
+                              store.set('ids', props.resourcesIds.ids)
+                              props.setResourcesIds({'ids': props.resourcesIds.ids})
                               
                             }}
                           >
@@ -208,14 +206,14 @@ function ResourceListProducts() {
                   heading="Select Products"
                   action={{
                     content: 'Browse',
-                    onAction: () => {setOpen(true)},
+                    onAction: () => {props.setOpen(true)},
                   }}
                 >
                 <TextField
-                  value={ valueBrowse }
+                  value={ props.valueBrowse }
                   onChange={() => {
-                    setValueBrowse('')
-                    setOpen(true)
+                    props.setValueBrowse('')
+                    props.setOpen(true)
                   }}
                   autoComplete="off"
                 />
@@ -240,9 +238,9 @@ function ResourceListProducts() {
                 </IndexTable>
                 <ResourcePicker
                   resourceType="Product"
-                  open={open}
+                  open={props.open}
                   onSelection={(resources) => handleSelection(resources)}
-                  onCancel = {() => setOpen(false)}
+                  onCancel = {() => props.setOpen(false)}
                   initialSelectionIds={
                     firstObject
                   }
