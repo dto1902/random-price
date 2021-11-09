@@ -1,12 +1,12 @@
 import React, {useCallback, useState} from 'react';
 import {Button, Modal, FormLayout, Select, TextStyle, TextField} from '@shopify/polaris';
 
-var discountObject = [], priceWithDiscount = 0;
+var discountObject = [];
 function ModalPrice(props) {
   const [active, setActive] = useState(false);
   const [selected, setSelected] = useState('Amount');
   const [valueDiscount, setValueDiscount] = useState(0);
-  const [valueReason, setValueReason] = useState('test');
+  const [valueReason, setValueReason] = useState('');
   
   
 
@@ -14,15 +14,17 @@ function ModalPrice(props) {
   const handleApply = useCallback(() => {
     if(selected === 'Amount') {
       let price = props.price;
-      price = parseFloat(price) - parseFloat(valueDiscount);
+      var seletedValue = 'FIXED_AMOUNT'
+      price = price - valueDiscount;
       if (price <= 0 ) {
         props.setPriceDiscount('0')
       } else {
         props.setPriceDiscount(price.toFixed(2))
       }
     } else {
+      var seletedValue = 'PERCENTAGE'
       let price = props.price;
-      price = parseFloat(price) - (parseFloat(price) * (parseFloat(valueDiscount) / 100));
+      price = price - (price * valueDiscount / 100);
       if (price <= 0 ) {
         props.setPriceDiscount('0')
       } else {
@@ -33,26 +35,27 @@ function ModalPrice(props) {
     var indiceVariantId = arrayDiscountObject.findIndex(ind => ind.toString() === props.id.toString());
 
     if (indiceVariantId !== -1) {
-      discountObject[indiceVariantId] ={
+      discountObject[indiceVariantId] = {
         "id": props.id,
-        "type": selected,
+        "type": seletedValue,
         "value": valueDiscount,
         "reason": valueReason
       }
     } else {
       discountObject = discountObject.concat({
         "id": props.id,
-        "type": selected,
+        "type": seletedValue,
         "value": valueDiscount,
         "reason": valueReason
       })
     }
-    setSelected('Amount')
-    setValueDiscount('')
-    setValueReason('')
-    setActive(!active), [active]
+    console.log(seletedValue);
+    setSelected('Amount');
+    setValueDiscount('');
+    setValueReason('');
+    setActive(!active), [active];
   });
-  const selectedChange = useCallback((value) => setSelected(value), []);
+  const selectedChange = useCallback((options) => setSelected(options));
   
   const activator = 
     <Button 
@@ -76,7 +79,7 @@ function ModalPrice(props) {
     var newPrice = ` ${props.price}`
   }
   return (
-    <p style={{display: 'flex'}}>
+    <span style={{display: 'flex'}}>
     <Modal
         activator={activator}
         open={active}
@@ -125,7 +128,7 @@ function ModalPrice(props) {
         </Modal.Section>
       </Modal>
       <span style={{textDecoration: "line-through", paddingLeft: '6' + '%', fontSize: '1.4' + 'rem', fontWeight: '400'}}>{newPrice}</span>
-    </p>
+    </span>
   );
 }
 export { ModalPrice, discountObject }

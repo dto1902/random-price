@@ -15,8 +15,7 @@ function ValueQuantity(props) {
       <IndexTable.Cell>
         <p><TextStyle><Link url={props.onlyproductid} external={true}>{props.titleProduct}</Link></TextStyle></p>
         <p><TextStyle>{props.titleVariant}</TextStyle></p>
-        <p><TextStyle>{props.sku}</TextStyle></p>
-        <TextStyle>
+        <p><TextStyle>SKU: {props.sku}</TextStyle></p>
           <ModalPrice 
             price={props.price}
             id={props.id}
@@ -25,7 +24,6 @@ function ValueQuantity(props) {
             priceDiscount={priceDiscount}
             setPriceDiscount={setPriceDiscount}
           />
-        </TextStyle>
       </IndexTable.Cell>
       <IndexTable.Cell>
         <TextField

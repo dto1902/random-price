@@ -65,8 +65,8 @@ function ResourceListProducts(props) {
     return (
         <Query query={GET_PRODUCTS_BY_ID} variables={ props.resourcesIds }>
           {({ data, loading, error }) => { // Refetches products by ID
-            if (loading) return 'Loading...';
-            if (error) return <div>{error.message}</div>;
+            if (loading) return <span>'Loading...'</span>;
+            if (error) return <span>{error.message}</span>;
 
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
@@ -162,89 +162,95 @@ function ResourceListProducts(props) {
               } else {
                 var max = '1000'
               }
-              return  <IndexTable.Row 
+              return  (
+                <>
+                  <IndexTable.Row
+                    id={id} 
+                    key={id}
+                    selected={selectedResources.includes(id).val}
+                    index= {props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
+                  >
+                    <IndexTable.Cell>{media}</IndexTable.Cell>
+                      <ValueQuantity 
+                        max={max} 
                         id={id} 
-                        key={id}
-                        selected={selectedResources.includes(id).val}
-                        index= {props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
+                        titleProduct={titleProduct}
+                        price={price}
+                        onlyproductid={onlyproductid}
+                        title={titleVariant}
+                        sku={sku}
+                        resourcesIds={props.resourcesIds}
+                        setResourcesIds={props.setResourcesIds}
+                      />
+                    <IndexTable.Cell>
+                      <Button
+                        plain
+                        variation="strong"
+                        onClick={() => {
+                          var indiceVariantId = props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
+                          var positionIndVariantId = parseInt(indiceVariantId);
+                          props.resourcesIds.ids.splice( positionIndVariantId, 1);
+                          data.nodes.splice( positionIndVariantId, 1);
+                          store.set('ids', props.resourcesIds.ids)
+                          props.setResourcesIds({'ids': props.resourcesIds.ids})
+                          
+                        }}
                       >
-                        <IndexTable.Cell>{media}</IndexTable.Cell>
-                          <ValueQuantity 
-                            max={max} 
-                            id={id} 
-                            titleProduct={titleProduct}
-                            price={price}
-                            onlyproductid={onlyproductid}
-                            title={titleVariant}
-                            sku={sku}
-                            resourcesIds={props.resourcesIds}
-                            setResourcesIds={props.setResourcesIds}
-                          />
-                        <IndexTable.Cell>
-                          <Button
-                            plain
-                            variation="strong"
-                            onClick={() => {
-                              var indiceVariantId = props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
-                              var positionIndVariantId = parseInt(indiceVariantId);
-                              props.resourcesIds.ids.splice( positionIndVariantId, 1);
-                              data.nodes.splice( positionIndVariantId, 1);
-                              store.set('ids', props.resourcesIds.ids)
-                              props.setResourcesIds({'ids': props.resourcesIds.ids})
-                              
-                            }}
-                          >
-                            X
-                          </Button>  
-                        </IndexTable.Cell>
-                      </IndexTable.Row>;
+                        X
+                      </Button>  
+                    </IndexTable.Cell>
+                  </IndexTable.Row>
+                </>
+              )
             };
 
             return (
               <Card>
-                <SettingToggle
-                  heading="Select Products"
-                  action={{
-                    content: 'Browse',
-                    onAction: () => {props.setOpen(true)},
-                  }}
-                >
-                <TextField
-                  value={ props.valueBrowse }
-                  onChange={() => {
-                    props.setValueBrowse('')
-                    props.setOpen(true)
-                  }}
-                  autoComplete="off"
-                />
-                </SettingToggle>
-                <IndexTable
-                  resourceName={resourceName}
-                  itemCount={products.length}
-                  selectedItemsCount={
-                    allResourcesSelected ? 'All' : selectedResources.length
-                  }
-                  onSelectionChange={handleSelectionChange}
-                  promotedBulkActions={promotedBulkActions}
-                  selectable={false}
-                  headings={[
-                    {title: ''},
-                    {title: 'Title'},
-                    {title: 'Quantity'},
-                    {title: 'Price'},
-                  ]}
-                >
-                  {rowMarkup}
-                </IndexTable>
-                <ResourcePicker
-                  resourceType="Product"
-                  open={props.open}
-                  onSelection={(resources) => handleSelection(resources)}
-                  onCancel = {() => props.setOpen(false)}
-                  initialSelectionIds={
-                    firstObject
-                  }
-                />
+                <Card.Section>
+                  <SettingToggle
+                    heading="Select Products"
+                    action={{
+                      content: 'Browse',
+                      onAction: () => {props.setOpen(true)},
+                    }}
+                  >
+                  <TextField
+                    value={ props.valueBrowse }
+                    onChange={() => {
+                      props.setValueBrowse('')
+                      props.setOpen(true)
+                    }}
+                    autoComplete="off"
+                  />
+                  </SettingToggle>
+                  <IndexTable
+                    resourceName={resourceName}
+                    itemCount={products.length}
+                    selectedItemsCount={
+                      allResourcesSelected ? 'All' : selectedResources.length
+                    }
+                    onSelectionChange={handleSelectionChange}
+                    promotedBulkActions={promotedBulkActions}
+                    selectable={false}
+                    headings={[
+                      {title: ''},
+                      {title: 'Title'},
+                      {title: 'Quantity'},
+                      {title: 'Price'},
+                    ]}
+                  >
+                    {rowMarkup}
+                  </IndexTable>
+                  <ResourcePicker
+                    resourceType="Product"
+                    open={props.open}
+                    onSelection={(resources) => handleSelection(resources)}
+                    onCancel = {() => props.setOpen(false)}
+                    initialSelectionIds={
+                      firstObject
+                    }
+                  />
+                </Card.Section>
               </Card>
             );
         }}

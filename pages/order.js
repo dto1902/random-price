@@ -19,9 +19,8 @@ function Order () {
   const [open, setOpen] = useState(false);
   const [resourcesIds, setResourcesIds] = useState({ids: store.get('ids')});
 
-var DraftOrderLineItemInput = [];
-var inputQty = 1;
-
+  var DraftOrderLineItemInput = [];
+  var inputQty = 1;
 
     return ( // Uses mutation's input to update product prices
     <Mutation mutation={CREATE_ORDER}>
@@ -46,7 +45,7 @@ var inputQty = 1;
             {showError}
         </Layout.Section> */}
         <Layout>
-          {/* <Layout.Section fullWidth>
+          <Layout.Section fullWidth>
             <Card>
               <Card.Section>
                 <OrderTypeButtons />
@@ -73,21 +72,6 @@ var inputQty = 1;
             </div>
           </Layout.Section>
           <Layout.Section>
-          <EmptyStateProducts />
-          </Layout.Section>
-          <Layout.Section secondary>
-            <CardMessage />
-          </Layout.Section>
-          <Layout.Section>
-            <CardMessage />
-          </Layout.Section>
-          <Layout.Section secondary>
-            <CardMessage />
-          </Layout.Section>
-          <Layout.Section>
-            <CardMessage />
-          </Layout.Section> */}
-          <Layout.Section>
             <EmptyStateProducts
               open={open}
               setOpen={setOpen}
@@ -97,6 +81,18 @@ var inputQty = 1;
               setResourcesIds={setResourcesIds}
             />
           </Layout.Section>
+          <Layout.Section secondary>
+            <CardMessage />
+          </Layout.Section>
+          <Layout.Section>
+            <CardMessage />
+          </Layout.Section>
+          <Layout.Section secondary>
+            <CardMessage />
+          </Layout.Section>
+          <Layout.Section>
+            <CardMessage />
+          </Layout.Section>
           <Layout.Section>
           <Button
             primary
@@ -105,21 +101,33 @@ var inputQty = 1;
               DraftOrderLineItemInput = [];
               for( let i = 0; i < resourcesIds.ids.length; i++) {
                 inputQty = document.getElementById('id:' + resourcesIds.ids[i]).value;
-                console.log(discountObject);
+                var indiceDiscount = discountObject.findIndex(ind => ind.id.toString() === resourcesIds.ids[i].toString());
+                if (discountObject[indiceDiscount]) {
+                  var type = discountObject[indiceDiscount].type;
+                  var value = discountObject[indiceDiscount].value;
+                  var reason = discountObject[indiceDiscount].reason;
+                } else {
+                  var type = 'FIXED_AMOUNT', value = 0, reason = '';
+                }
                 DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
                   "variantId": resourcesIds.ids[i],
                   "quantity":  parseInt(inputQty),
+                  "appliedDiscount": {
+                    "valueType": type,
+                    "value": parseInt(value),
+                    "title": reason,
+                  },
                 })
               }
               console.log(DraftOrderLineItemInput)
-              // let promise = new Promise((resolve) => resolve());
+              let promise = new Promise((resolve) => resolve());
 
-              // let draftOrderInput = {
-              //     lineItems: 
-              //       DraftOrderLineItemInput
-              // }
-              // promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
-              //     .then(response => {console.log(response)});
+              let draftOrderInput = {
+                  lineItems: 
+                    DraftOrderLineItemInput
+              }
+              promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
+                  .then(response => {console.log(response)});
 
               }
               }
