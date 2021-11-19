@@ -14,18 +14,18 @@ import {
 } from '@shopify/polaris';
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
-import { ModalNewProduct, NewProduct } from './ModalNewProduct';
+import { ModalNewProduct } from './ModalNewProduct';
 import { ValueQuantity } from './InputQuantity';
+import { rowMarkup2 } from './ModalNewProduct'
 
 // GraphQL query that retrieves products by ID
 
 
 var allProducts = [];
-
+console.log(`in resourceLP row2${rowMarkup2}`)
 function ResourceListProducts(props) {
   const {selectedResources, allResourcesSelected, handleSelectionChange} = useIndexResourceState([]);
   var [newProduct, setNewProduct] = useState([]);
-  const [rowMarkup2, setRowMarkup2] = useState([]);
 
     return (
         <Query query={GET_PRODUCTS_BY_ID} variables={ props.resourcesIds }>
@@ -79,9 +79,9 @@ function ResourceListProducts(props) {
               },
             ];
             
-            allProducts = (data.nodes.concat(NewProduct))
+            allProducts = (data.nodes.concat(newProduct))
             
-            var rowMarkup = data.nodes.map(getTable);
+            var rowMarkup = allProducts.map(getTable);
             function getTable(getTable) {
               if (getTable.title === 'Default Title'){
                 var titleProduct = getTable.product.title;
@@ -122,14 +122,22 @@ function ResourceListProducts(props) {
               }
               var id = getTable.id;
               var price = getTable.price;
-              var sku = getTable.sku;
+              if ( getTable.sku === "Not/Aplicated" ) {
+                if (getTable.shipping) { 
+                  var sku = 'Requires shipping';
+                } else {
+                  var sku = 'Does not require shipping'
+                }
+              } else {
+                var sku = `SKU: ${getTable.sku}`;
+              }
+              
               var onlyproductid = `${data.shop.url}/admin/products/${getTable.product.legacyResourceId}`;
               if (getTable.inventoryItem.tracked) {
                 var max = getTable.inventoryQuantity
               } else {
                 var max = '1000'
               }
-              
               return  (
                   <IndexTable.Row
                   id={id} 
@@ -157,10 +165,25 @@ function ResourceListProducts(props) {
                         onClick={() => {
                           let indiceVariantId = props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
                           let positionIndVariantId = parseInt(indiceVariantId);
-                          props.resourcesIds.ids.splice( positionIndVariantId, 1);
-                          data.nodes.splice( positionIndVariantId, 1);
-                          store.set('ids', props.resourcesIds.ids)
-                          props.setResourcesIds({'ids': props.resourcesIds.ids});
+                          if (positionIndVariantId === -1) {
+                            let indiceNewProduct = newProduct.findIndex(ind => ind.id.toString() === id.toString());
+                            let positionNewProduct = parseInt(indiceNewProduct);
+                            let indiceNewProduct2 = allProducts.findIndex(ind => ind.id.toString() === id.toString());
+                            let positionNewProduct2 = parseInt(indiceNewProduct2);
+                            console.log(data.nodes)
+                            data.nodes.splice( positionNewProduct2, 1);
+                            console.log(data.nodes)
+                            console.log(positionIndVariantId)
+                            console.log(newProduct)
+                            console.log(data.nodes)
+                            console.log(allProducts)
+                            
+                          } else {
+                            props.resourcesIds.ids.splice( positionIndVariantId, 1);
+                            data.nodes.splice( positionIndVariantId, 1);
+                            store.set('ids', props.resourcesIds.ids)
+                            props.setResourcesIds({'ids': props.resourcesIds.ids});
+                          }
                         }}
                       >
                         X
@@ -185,8 +208,6 @@ function ResourceListProducts(props) {
                       setNewProduct={setNewProduct}
                       resourcesIds={props.resourcesIds}
                       setResourcesIds={props.setResourcesIds}
-                      rowMarkup2={rowMarkup2}
-                      setRowMarkup2={setRowMarkup2}
                       />
                     </Stack.Item>
                   </Stack>

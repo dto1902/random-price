@@ -1,52 +1,92 @@
-import React from 'react';
-import {TextStyle, Card, ResourceList, Thumbnail} from '@shopify/polaris';
+import React, {useCallback, useState} from 'react';
+import {TextField, Modal, Card, DatePicker, Layout} from '@shopify/polaris';
+import TimePicker from 'rc-time-picker';
+import moment from 'moment';
+import 'rc-time-picker/assets/index.css';
 
-export default class DeliveryDate extends React.Component {
-  render() {
-    return (
-            <Card title="Delivery Date" actions={[{content: 'Manage'}]}>
-            <Card.Section>
-              <TextStyle variation="subdued">301 units available</TextStyle>
-            </Card.Section>
-            <Card.Section title="Items">
-              <ResourceList
-                resourceName={{singular: 'product', plural: 'products'}}
-                items={[
-                  {
-                    id: 345,
-                    url: 'produdcts/345',
-                    name: 'Black & orange scarf',
-                    sku: '9234194023',
-                    quantity: '1230',
-                    media: (
-                      <Thumbnail
-                        source="https://burst.shopifycdn.com/photos/black-orange-stripes_373x@2x.jpg"
-                        alt="Black orange scarf"
-                      />
-                    ),
-                  },
-                ]}
-                renderItem={(item) => {
-                  const {id, url, name, sku, media, quantity} = item;
+function DeliveryDate() {
+  const [value, setValue] = useState('');
+  const [active, setActive] = useState(false);
+  const toggleActive = useCallback(() => setActive((active) => !active), []);
+  const [{month, year}, setDate] = useState({month: 1, year: 2018});
+  const [open, setOpen] = useState(false)
+  const [selectedDates, setSelectedDates] = useState({
+    start: new Date('Wed Feb 07 2018 00:00:00 GMT-0500 (EST)'),
+    end: new Date('Wed Feb 07 2018 00:00:00 GMT-0500 (EST)'),
+  });
+  const handleMonthChange = useCallback(
+    (month, year) => setDate({month, year}),
+    [],
+  );
+  const handleChange = () => {
+    setValue('')
+  setActive(true)
+  };
+  var timerOpen = () => {
+    setOpen( true );
+  };
+  var timerClose = () => {
+    setOpen( false );
+  };
 
-                  return (
-                    <ResourceList.Item
-                      id={id}
-                      url={url}
-                      media={media}
-                      accessibilityLabel={`View details for ${name}`}
-                    >
-                      <h3>
-                        <TextStyle variation="strong">{name}</TextStyle>
-                      </h3>
-                      <div>SKU: {sku}</div>
-                      <div>{quantity} available</div>
-                    </ResourceList.Item>
-                  );
-                }}
+  function onChange() {
+    setOpen(false);
+    close(true);
+  }
+
+  return (
+    <Card>
+      <Card.Section>
+          <TextField
+            label="Delivery Date"
+            value={value}
+            onChange={handleChange}
+            autoComplete="off"
+          />
+          <Modal
+            small
+            open={active}
+            onClose={toggleActive}
+            title="Import customers by CSV"
+            primaryAction={{
+              content: 'Delivery Date',
+              onAction: toggleActive,
+            }}
+            secondaryActions={[
+              {
+                content: 'Cancel',
+                onAction: toggleActive,
+              },
+            ]}
+          >
+            <Modal.Section>
+              <DatePicker
+                month={month}
+                year={year}
+                onChange={setSelectedDates}
+                onMonthChange={handleMonthChange}
+                selected={selectedDates}
               />
-            </Card.Section>
-          </Card>
-        );
-    }
+            </Modal.Section>
+          </Modal>
+          </Card.Section>
+          <Card.Section>
+          <p>Pick Up Time</p>
+          <TimePicker
+            open={open}
+            onOpen={timerOpen}
+            onClose={timerClose}
+            minuteStep={60}
+            showSecond={false}
+            id="test"
+            style={{ width: 100 + '%' }}
+            defaultValue={moment()}
+            onChange={onChange}
+            disabledHours={() => [0,1,2,3,4,5,6,7,12,13,19,20,21,22,23]}
+          />
+        </Card.Section>
+    </Card>
+  );
 }
+
+export { DeliveryDate }

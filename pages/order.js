@@ -3,21 +3,23 @@ import { CREATE_ORDER } from '../createOrder/Produtcs/GraphQl/MutaionCreateDraft
 import { Mutation } from 'react-apollo';
 import { Page, Layout, Button, Banner, Toast, Frame, FormLayout, TextField, Card, EmptyState } from '@shopify/polaris';
 import store from 'store-js';
-import { Context } from '@shopify/app-bridge-react';
+import { Note } from '../createOrder/Note';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
-import FindOrCreateOrder from '../createOrder/FindOrCreateCustomer'
-import RecipientInfo from '../createOrder/RecipientInfo';
-import RecipientReferentName from '../createOrder/RecipientReferentName';
-import DeliveryDate from '../createOrder/DeliveryDate';
-import PickUpDate from '../createOrder/PickUpDate';
+import { FindOrCreateCustomer } from '../createOrder/FindOrCreateCustomer'
+import { RecipientInfo } from '../createOrder/RecipientInfo';
+import { RecipientReferentName } from '../createOrder/RecipientReferentName';
+import { DeliveryDate } from '../createOrder/DeliveryDate';
+import { PickUpDate } from '../createOrder/PickUpDate';
 import CardMessage from '../createOrder/CardMessage';
 import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
-import { discountObject } from '../createOrder/Produtcs/ModalPrice'
+import { discountObject } from '../createOrder/Produtcs/ModalPrice';
+import { allProducts } from '../createOrder/Produtcs/ResourceListProducts'
 
 function Order () {
   const [valueBrowse, setValueBrowse] = useState('');
   const [open, setOpen] = useState(false);
   const [resourcesIds, setResourcesIds] = useState({ids: store.get('ids')});
+  const [noteValue, setNoteValue] = useState('');
 
   var DraftOrderLineItemInput = [];
   var inputQty = 1;
@@ -40,10 +42,10 @@ function Order () {
 
     return (
       <Page>
-        {/* {showToast}
+        {showToast}
         <Layout.Section>
             {showError}
-        </Layout.Section> */}
+        </Layout.Section>
         <Layout>
           <Layout.Section fullWidth>
             <Card>
@@ -53,7 +55,7 @@ function Order () {
             </Card>
           </Layout.Section>
           <Layout.Section oneThird>
-            <FindOrCreateOrder />
+            <FindOrCreateCustomer />
           </Layout.Section>
           <Layout.Section oneThird>
             <div id='RecipientInfo'>
@@ -82,9 +84,12 @@ function Order () {
             />
           </Layout.Section>
           <Layout.Section secondary>
-            <CardMessage />
+            <Note 
+              noteValue={noteValue}
+              setNoteValue={setNoteValue}
+            />
           </Layout.Section>
-          <Layout.Section>
+          {/* <Layout.Section>
             <CardMessage />
           </Layout.Section>
           <Layout.Section secondary>
@@ -92,16 +97,16 @@ function Order () {
           </Layout.Section>
           <Layout.Section>
             <CardMessage />
-          </Layout.Section>
+          </Layout.Section> */}
           <Layout.Section>
           <Button
             primary
             textAlign={"center"}
             onClick={() => {
               DraftOrderLineItemInput = [];
-              for( let i = 0; i < resourcesIds.ids.length; i++) {
-                inputQty = document.getElementById('id:' + resourcesIds.ids[i]).value;
-                var indiceDiscount = discountObject.findIndex(ind => ind.id.toString() === resourcesIds.ids[i].toString());
+              for( let i = 0; i < allProducts.length; i++) {
+                inputQty = document.getElementById('id:' + allProducts[i].id).value;
+                var indiceDiscount = discountObject.findIndex(ind => ind.id.toString() === allProducts[0].id.toString());
                 if (discountObject[indiceDiscount]) {
                   var type = discountObject[indiceDiscount].type;
                   var value = discountObject[indiceDiscount].value;
@@ -109,17 +114,33 @@ function Order () {
                 } else {
                   var type = 'FIXED_AMOUNT', value = 0, reason = '';
                 }
-                DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
-                  "variantId": resourcesIds.ids[i],
-                  "quantity":  parseInt(inputQty),
-                  "appliedDiscount": {
-                    "valueType": type,
-                    "value": parseInt(value),
-                    "title": reason,
-                  },
-                })
+                if (allProducts[i].newProduct) {
+                  DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
+                    "title": allProducts[i].product.title,
+                    "originalUnitPrice": allProducts[i].price,
+                    "quantity":  parseInt(inputQty),
+                    "requiresShipping": allProducts[i].shipping,
+                    "taxable": allProducts[i].taxable,
+                    "appliedDiscount": {
+                      "valueType": type,
+                      "value": parseInt(value),
+                      "title": reason,
+                    },
+                  })
+                } else {
+                  DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
+                    "variantId": allProducts[i].id,
+                    "quantity":  parseInt(inputQty),
+                    "appliedDiscount": {
+                      "valueType": type,
+                      "value": parseInt(value),
+                      "title": reason,
+                    },
+                  })
+                }
               }
               console.log(DraftOrderLineItemInput)
+
               let promise = new Promise((resolve) => resolve());
 
               let draftOrderInput = {

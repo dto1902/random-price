@@ -25,3 +25,17 @@
     caret-color:var(--p-text); 
     color:var(--p-text); 
 }
+#itemNameValueProduct{
+    width: 35%;
+}
+#newPriceQuantityProduct{
+    width: 25%;
+}
+#test {
+   width: 100%;
+   font-size:1.4rem;
+   line-height: 2.4rem;
+   min-height: 3.6rem;
+   color: var(--p-text);
+   border: 0.1rem solid rgba(186, 191, 195, 1);
+}

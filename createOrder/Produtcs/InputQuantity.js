@@ -4,18 +4,29 @@ import { ModalPrice } from './ModalPrice'
 
 
 function ValueQuantity(props) {
-  var [valueQuantityText, setValueQuantityText] = useState('1');
+  if (props.quantity) {
+    var qty = props.quantity;
+  } else {
+    var qty = '1'
+  }
+  var [valueQuantityText, setValueQuantityText] = useState(qty);
   const [priceDiscount, setPriceDiscount] = useState(props.price);
 
   const quantityChange = useCallback((newValue) => {
     setValueQuantityText(newValue), []
   });
+  
+  if (props.onlyproductid) {
+    var title = <Link url={props.onlyproductid} external={true}>{props.titleProduct}</Link>;
+  } else {
+    var title = props.titleProduct
+  }
   return (
     <>
       <IndexTable.Cell>
-        <p><TextStyle><Link url={props.onlyproductid} external={true}>{props.titleProduct}</Link></TextStyle></p>
-        <p><TextStyle>{props.titleVariant}</TextStyle></p>
-        <p><TextStyle>SKU: {props.sku}</TextStyle></p>
+        <p><TextStyle>{title}</TextStyle></p>
+        <p><TextStyle>{props.title}</TextStyle></p>
+        <p><TextStyle>{props.sku}</TextStyle></p>
           <ModalPrice 
             price={props.price}
             id={props.id}

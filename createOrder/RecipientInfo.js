@@ -1,46 +1,22 @@
-import React from 'react';
-import {Avatar, Card, ResourceItem, ResourceList, TextStyle} from '@shopify/polaris';
+import React, {useCallback, useState} from 'react';
+import {Card, TextField} from '@shopify/polaris';
 
-export default class RecipientInfo extends React.Component {
-  render() {
-    return (
-      <Card>
-  <ResourceList
-    resourceName={{singular: 'customer', plural: 'customers'}}
-    items={[
-      {
-        id: 100,
-        url: 'customers/341',
-        name: 'Mae Jemison',
-        location: 'Decatur, USA',
-      },
-      {
-        id: 200,
-        url: 'customers/256',
-        name: 'Ellen Ochoa',
-        location: 'Los Angeles, USA',
-      },
-    ]}
-    renderItem={(item) => {
-      const {id, url, name, location} = item;
-      const media = <Avatar customer size="medium" name={name} />;
+function RecipientInfo() {
 
-      return (
-        <ResourceItem
-          id={id}
-          url={url}
-          media={media}
-          accessibilityLabel={`View details for ${name}`}
-        >
-          <h3>
-            <TextStyle variation="strong">{name}</TextStyle>
-          </h3>
-          <div>{location}</div>
-        </ResourceItem>
-      );
-    }}
-  />
-</Card>
-    );
-  }
+  const [recipientInfoValue, setRecipientInfoValue] = useState('');
+  const RecipientInfoChange = useCallback((newValue) => setRecipientInfoValue(newValue), []);
+
+  return (
+    <Card>
+        <Card.Section>
+            <TextField
+                label="Find or Create Customer"
+                value={recipientInfoValue}
+                onChange={RecipientInfoChange}
+                autoComplete="off"
+            />
+      </Card.Section>
+    </Card>
+  );
 }
+export { RecipientInfo }

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Card, Layout, EmptyState, TextField, SettingToggle } from "@shopify/polaris";
+import { Card, Stack, Heading, TextField, Icon, Button } from "@shopify/polaris";
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
 import { ResourceListProducts } from '../Produtcs/ResourceListProducts';
+import { ModalNewProduct } from '../Produtcs/ModalNewProduct';
+
 
 function EmptyStateProducts (props) {
 
@@ -21,33 +23,43 @@ function EmptyStateProducts (props) {
     props.setResourcesIds({'ids': idsFromVariantResources3})
   };
   
-    const emptyState = !store.get('ids');
     if(!store.get('ids')) {
       return (
         <Card>
         <Card.Section>
+        <Stack>
+            <Stack.Item fill>
+              <Heading fullWidth={true}>
+                Products
+              </Heading>
+            </Stack.Item>
+            <Stack.Item>
+              <ModalNewProduct />
+            </Stack.Item>
+          </Stack>
         <ResourcePicker
           resourceType="Product"
           open={props.open}
           onSelection={(resources) => handleSelection(resources)}
           onCancel = {() => props.setOpen(false)}
         />
-        <SettingToggle
-          heading="Select Products"
-          action={{
-            content: 'Browse',
-            onAction: () => props.setOpen(true),
-          }}
-        >
         <TextField
           value={ props.valueBrowse }
+          placeholder='Search Products'
           onChange={() => {
             props.setValueBrowse('')
             props.setOpen(true)
           }}
           autoComplete="off"
+          connectedRight={
+            <Button
+            onClick = {() => props.setOpen(true)}
+            primary={true}
+            >
+              Browse
+            </Button>
+          }
         />
-        </SettingToggle>
         </Card.Section>
         </Card>
     );
