@@ -21,6 +21,8 @@ function ModalNewProduct(props) {
     setQuantityNewProducts('1');
   });
   const handleApply = useCallback(() => {
+      store.set('ids', [])
+      console.log(store.get('ids'))
     setActive(!active), [active];
     NewProduct = NewProduct.concat([{
       id: itemNameValue.replace(/ /gi, "")+priceNewProduct,
@@ -101,7 +103,7 @@ function ModalNewProduct(props) {
             </IndexTable.Cell>
         </IndexTable.Row>
         )
-    }
+    };
     //console.log(props.resourcesIds)
     //console.log(rowMarkup2)
   });

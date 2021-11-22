@@ -3,7 +3,7 @@ import {TextField, Card } from '@shopify/polaris';
 
 function PickUpDate() {
   const [pickUpDatevalue, setPickUpDatevalue] = useState('');
-  const pickUpDatevalueChange = useCallback((newValue) => setPickUpDatevalue(newValue), []);
+  const pickUpDateValueChange = useCallback((newValue) => setPickUpDatevalue(newValue), []);
 
 
   return (
@@ -12,7 +12,7 @@ function PickUpDate() {
           <TextField
             label="Delivery Date"
             value={pickUpDatevalue}
-            onChange={pickUpDatevalueChange}
+            onChange={pickUpDateValueChange}
             autoComplete="off"
           />
         </Card.Section>

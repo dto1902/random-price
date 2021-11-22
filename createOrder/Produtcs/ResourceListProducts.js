@@ -24,7 +24,6 @@ var allProducts = [];
 
 function ResourceListProducts(props) {
   const {selectedResources, allResourcesSelected, handleSelectionChange} = useIndexResourceState([]);
-  var [newProduct, setNewProduct] = useState([]);
   const [rowMarkup2, setRowMarkup2] = useState([]);
 
     return (
@@ -181,8 +180,8 @@ function ResourceListProducts(props) {
                     </Stack.Item>
                     <Stack.Item>
                       <ModalNewProduct 
-                      newProduct={newProduct}
-                      setNewProduct={setNewProduct}
+                      newProduct={props.newProduct}
+                      setNewProduct={props.setNewProduct}
                       resourcesIds={props.resourcesIds}
                       setResourcesIds={props.setResourcesIds}
                       rowMarkup2={rowMarkup2}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Stack, Heading, TextField, Icon, Button } from "@shopify/polaris";
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
@@ -7,7 +7,7 @@ import { ModalNewProduct } from '../Produtcs/ModalNewProduct';
 
 
 function EmptyStateProducts (props) {
-
+  const [newProduct, setNewProduct] = useState([]);
   const handleSelection = (resources) => {
     const idsFromVariantResources = resources.selection.map(( product ) => product.variants);
     var idsFromVariantResources2 = [];
@@ -22,7 +22,7 @@ function EmptyStateProducts (props) {
     store.set('ids', idsFromVariantResources3)
     props.setResourcesIds({'ids': idsFromVariantResources3})
   };
-  
+    store.set('ids', [])
     if(!store.get('ids')) {
       return (
         <Card>
@@ -34,7 +34,10 @@ function EmptyStateProducts (props) {
               </Heading>
             </Stack.Item>
             <Stack.Item>
-              <ModalNewProduct />
+              <ModalNewProduct 
+                newProduct={props.newProduct}
+                setNewProduct={props.setNewProduct}
+              />
             </Stack.Item>
           </Stack>
         <ResourcePicker

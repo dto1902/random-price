@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CREATE_ORDER } from '../createOrder/Produtcs/GraphQl/MutaionCreateDraftOrder'
 import { Mutation } from 'react-apollo';
-import { Page, Layout, Button, Banner, Toast, Frame, FormLayout, TextField, Card, EmptyState } from '@shopify/polaris';
+import { Page, Layout, Button, Banner, Toast, Card } from '@shopify/polaris';
 import store from 'store-js';
 import { Note } from '../createOrder/Note';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
@@ -10,10 +10,10 @@ import { RecipientInfo } from '../createOrder/RecipientInfo';
 import { RecipientReferentName } from '../createOrder/RecipientReferentName';
 import { DeliveryDate } from '../createOrder/DeliveryDate';
 import { PickUpDate } from '../createOrder/PickUpDate';
-import CardMessage from '../createOrder/CardMessage';
 import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
 import { discountObject } from '../createOrder/Produtcs/ModalPrice';
-import { allProducts } from '../createOrder/Produtcs/ResourceListProducts'
+import { allProducts } from '../createOrder/Produtcs/ResourceListProducts';
+import { StaffNotes } from '../createOrder/StaffNotes'
 
 function Order () {
   const [valueBrowse, setValueBrowse] = useState('');
@@ -89,15 +89,9 @@ function Order () {
               setNoteValue={setNoteValue}
             />
           </Layout.Section>
-          {/* <Layout.Section>
-            <CardMessage />
-          </Layout.Section>
-          <Layout.Section secondary>
-            <CardMessage />
-          </Layout.Section>
           <Layout.Section>
-            <CardMessage />
-          </Layout.Section> */}
+            <StaffNotes />
+          </Layout.Section>
           <Layout.Section>
           <Button
             primary
@@ -139,13 +133,27 @@ function Order () {
                   })
                 }
               }
-              console.log(DraftOrderLineItemInput)
-
+              let attributes = [
+              {
+                "key": "delivery-date",
+                "value": document.getElementById('datePicker').value
+              },
+              {
+                "key": "Pickup-Time",
+                "value": document.getElementById('Pickup-Time').value
+              },
+              {
+                "key": "Staff-Notes",
+                "value": document.getElementById('StaffNotesValue').value
+              }
+              ]
               let promise = new Promise((resolve) => resolve());
 
               let draftOrderInput = {
                   lineItems: 
-                    DraftOrderLineItemInput
+                    DraftOrderLineItemInput,
+                  note: noteValue,
+                  customAttributes: attributes,
               }
               promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
                   .then(response => {console.log(response)});
