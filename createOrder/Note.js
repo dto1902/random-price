@@ -9,7 +9,7 @@ function Note(props) {
     <Card>
         <Card.Section>
             <TextField
-                label="Notes"
+                label="Card Message"
                 value={props.noteValue}
                 onChange={notesChange}
                 autoComplete="off"

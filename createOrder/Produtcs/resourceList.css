@@ -32,7 +32,7 @@
     width: 25%;
 }
 .test {
-   width: 100%;
+   width: 100% !important;
    font-size:1.4rem;
    line-height: 2.4rem;
    min-height: 3.6rem;

@@ -1,7 +1,7 @@
 import React, {useCallback, useState} from 'react';
 import {Card, TextField} from '@shopify/polaris';
 
-function RecipientInfo() {
+function ShippingAddress() {
 
   const [recipientInfoValue, setRecipientInfoValue] = useState('');
   const RecipientInfoChange = useCallback((newValue) => setRecipientInfoValue(newValue), []);
@@ -10,7 +10,7 @@ function RecipientInfo() {
     <Card>
         <Card.Section>
             <TextField
-                label="Find or Create Customer"
+                label="Shipping Address"
                 value={recipientInfoValue}
                 onChange={RecipientInfoChange}
                 autoComplete="off"
@@ -19,4 +19,4 @@ function RecipientInfo() {
     </Card>
   );
 }
-export { RecipientInfo }
+export { ShippingAddress }

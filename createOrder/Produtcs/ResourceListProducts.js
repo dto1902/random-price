@@ -31,10 +31,9 @@ function ResourceListProducts(props) {
           {({ data, loading, error }) => { // Refetches products by ID
             if (loading) return 'Loading...';
             if (error) return <p>{error.message}</p>;
-
+            
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
-
             var arraySeletedProducts = '', arraySeletedVariants = '';
 
             arraySeletedVariants = data.nodes.map(getIdsVariants);
@@ -208,6 +207,7 @@ function ResourceListProducts(props) {
                     />
                   <IndexTable
                     resourceName={resourceName}
+                    firstRowSticky={false}
                     itemCount={products.length}
                     selectedItemsCount={
                       allResourcesSelected ? 'All' : selectedResources.length

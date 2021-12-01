@@ -22,51 +22,51 @@ function EmptyStateProducts (props) {
     store.set('ids', idsFromVariantResources3)
     props.setResourcesIds({'ids': idsFromVariantResources3})
   };
-    store.set('ids', [])
-    if(!store.get('ids')) {
-      return (
-        <Card>
-        <Card.Section>
-        <Stack>
-            <Stack.Item fill>
-              <Heading fullWidth={true}>
-                Products
-              </Heading>
-            </Stack.Item>
-            <Stack.Item>
-              <ModalNewProduct 
-                newProduct={props.newProduct}
-                setNewProduct={props.setNewProduct}
-              />
-            </Stack.Item>
-          </Stack>
-        <ResourcePicker
-          resourceType="Product"
-          open={props.open}
-          onSelection={(resources) => handleSelection(resources)}
-          onCancel = {() => props.setOpen(false)}
-        />
-        <TextField
-          value={ props.valueBrowse }
-          placeholder='Search Products'
-          onChange={() => {
-            props.setValueBrowse('')
-            props.setOpen(true)
-          }}
-          autoComplete="off"
-          connectedRight={
-            <Button
-            onClick = {() => props.setOpen(true)}
-            primary={true}
-            >
-              Browse
-            </Button>
-          }
-        />
-        </Card.Section>
-        </Card>
-    );
-    } else {
+
+    // if(store.get('ids')) {
+    //   return (
+    //     <Card>
+    //     <Card.Section>
+    //     <Stack>
+    //         <Stack.Item fill>
+    //           <Heading fullWidth={true}>
+    //             Products
+    //           </Heading>
+    //         </Stack.Item>
+    //         <Stack.Item>
+    //           <ModalNewProduct 
+    //             newProduct={props.newProduct}
+    //             setNewProduct={props.setNewProduct}
+    //           />
+    //         </Stack.Item>
+    //       </Stack>
+    //     <ResourcePicker
+    //       resourceType="Product"
+    //       open={props.open}
+    //       onSelection={(resources) => handleSelection(resources)}
+    //       onCancel = {() => props.setOpen(false)}
+    //     />
+    //     <TextField
+    //       value={ props.valueBrowse }
+    //       placeholder='Search Products'
+    //       onChange={() => {
+    //         props.setValueBrowse('')
+    //         props.setOpen(true)
+    //       }}
+    //       autoComplete="off"
+    //       connectedRight={
+    //         <Button
+    //         onClick = {() => props.setOpen(true)}
+    //         primary={true}
+    //         >
+    //           Browse
+    //         </Button>
+    //       }
+    //     />
+    //     </Card.Section>
+    //     </Card>
+    // );
+    // } else {
       return(
         <ResourceListProducts 
           open={props.open}
@@ -77,7 +77,7 @@ function EmptyStateProducts (props) {
           setResourcesIds={props.setResourcesIds}
         />
       )
-    }
+    // }
 }
 
 export default EmptyStateProducts;

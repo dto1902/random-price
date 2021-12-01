@@ -5,8 +5,8 @@ import { Page, Layout, Button, Banner, Toast, Card } from '@shopify/polaris';
 import store from 'store-js';
 import { Note } from '../createOrder/Note';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
-import { FindOrCreateCustomer } from '../createOrder/FindOrCreateCustomer'
-import { RecipientInfo } from '../createOrder/RecipientInfo';
+import { FindOrCreateCustomer, customerId } from '../createOrder/Customer/FindOrCreateCustomer'
+import { ShippingAddress } from '../createOrder/RecipientInfo';
 import { RecipientReferentName } from '../createOrder/RecipientReferentName';
 import { DeliveryDate } from '../createOrder/DeliveryDate';
 import { PickUpDate } from '../createOrder/PickUpDate';
@@ -14,11 +14,12 @@ import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
 import { discountObject } from '../createOrder/Produtcs/ModalPrice';
 import { allProducts } from '../createOrder/Produtcs/ResourceListProducts';
 import { StaffNotes } from '../createOrder/StaffNotes'
+import { TablePayments } from '../createOrder/TablePayments'
 
 function Order () {
   const [valueBrowse, setValueBrowse] = useState('');
   const [open, setOpen] = useState(false);
-  const [resourcesIds, setResourcesIds] = useState({ids: store.get('ids')});
+  const [resourcesIds, setResourcesIds] = useState(({'ids': []}));
   const [noteValue, setNoteValue] = useState('');
 
   var DraftOrderLineItemInput = [];
@@ -59,7 +60,7 @@ function Order () {
           </Layout.Section>
           <Layout.Section oneThird>
             <div id='RecipientInfo'>
-              <RecipientInfo />
+              <ShippingAddress />
             </div>
             <div id='RecipientReferentName' style={{display:'none'}}>
               <RecipientReferentName />
@@ -88,9 +89,10 @@ function Order () {
               noteValue={noteValue}
               setNoteValue={setNoteValue}
             />
+            <StaffNotes secondary/>
           </Layout.Section>
           <Layout.Section>
-            <StaffNotes />
+            <TablePayments />
           </Layout.Section>
           <Layout.Section>
           <Button
@@ -147,6 +149,8 @@ function Order () {
                 "value": document.getElementById('StaffNotesValue').value
               }
               ]
+              
+              console.log(customerId[0])
               let promise = new Promise((resolve) => resolve());
 
               let draftOrderInput = {
@@ -154,6 +158,7 @@ function Order () {
                     DraftOrderLineItemInput,
                   note: noteValue,
                   customAttributes: attributes,
+                  customerId: customerId[0],
               }
               promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
                   .then(response => {console.log(response)});
