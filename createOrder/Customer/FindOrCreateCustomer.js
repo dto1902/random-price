@@ -1,9 +1,10 @@
 import React, { useState} from 'react';
-import {Autocomplete, Card, Icon, Subheading } from '@shopify/polaris';
+import {Autocomplete, Card, Icon, Stack, Subheading } from '@shopify/polaris';
 import gql from 'graphql-tag';
 import { Query } from 'react-apollo';
 import { SearchMinor} from '@shopify/polaris-icons';
-import { CreateCustomer } from './CreateCustomer'
+import { CreateCustomer } from './CreateCustomer';
+import { ModalEditCustomerInfo } from '../Customer/ModalEditCustomerInfo';
 
 const GET_CUSTOMERS = gql`
 query ($query: String!){
@@ -40,6 +41,9 @@ function FindOrCreateCustomer() {
   const [active, setActive] = useState(false);
   const [contactInfo, setContactInfo] = useState([]);
   const [billingAddress, setBillingAddress] = useState([]);
+  const [activeEditCustomerInfo, setActiveEditCustomerInfo] = useState(false);
+  const [emailCustomer, setEmailCustomer] = useState('');
+  const [phoneCustomer, setPhoneCustomer] = useState('');
   var loadingCustomers = false;
 return(
   <Query query={GET_CUSTOMERS} variables={{ query: inputValue }}>
@@ -79,25 +83,22 @@ return(
             });
             return matchedOption && matchedOption.onlyNames;
           });
-
+          
+          const selectedContactInfo = selected.map((selectedItem) => {
+            const matchedOption = options.find((option) => {
+              return (option.value.match(selectedItem));
+            });
+            
+            return {'emailCustomer': matchedOption.email || 'No email', 'phoneCustomer': matchedOption.phone || 'No phone number'};
+          });
+          
+          setEmailCustomer(selectedContactInfo[0].emailCustomer);
+          setPhoneCustomer(selectedContactInfo[0].phoneCustomer);
           
           setSelectedOptions(selected);
           setInputValue(selectedText[0]);
           customerId = selected;
 
-          const selectedContactInfo = selected.map((selectedItem) => {
-            const matchedOption = options.find((option) => {
-              return (option.value.match(selectedItem));
-            });
-            return {'emailCustomer': matchedOption.email || 'No email', 'phoneCustomer': matchedOption.phone || 'No phone number'};
-          });
-          setContactInfo(
-            <Card.Section>
-              <Subheading>CONTACT INFORMATION</Subheading>
-              <div style={{marginTop:'1em'}}><p>{selectedContactInfo[0].emailCustomer}</p></div>
-              <div style={{marginTop:'1em'}}><p>{selectedContactInfo[0].phoneCustomer}</p></div>
-            </Card.Section>
-          );
           const selectedBillingAddress = selected.map((selectedItem) => {
             const matchedOption = options.find((option) => {
               return (option.value.match(selectedItem));
@@ -140,6 +141,29 @@ return(
             );
           }
         }
+        var customerInfo = "";
+        if (customerId) {
+          customerInfo = 
+          <Card.Section>
+            <Stack>
+              <Stack.Item fill>
+                <Subheading fullWidth={true}>
+                  CONTACT INFORMATION
+                </Subheading>
+              </Stack.Item>
+              <Stack.Item>
+                <ModalEditCustomerInfo
+                  emailCustomer = {emailCustomer}
+                  setEmailCustomer = {setEmailCustomer}
+                  phoneCustomer = {phoneCustomer}
+                  setPhoneCustomer = {setPhoneCustomer}
+                />
+              </Stack.Item>
+            </Stack>
+            <div style={{marginTop:'1em'}}><p>{emailCustomer}</p></div>
+            <div style={{marginTop:'1em'}}><p>{phoneCustomer}</p></div>
+        </Card.Section>
+        } 
         const textField = (
           <Autocomplete.TextField
             onChange={updateText}
@@ -179,7 +203,7 @@ return(
                   autoComplete="nope"
                 />
             </Card.Section>
-            {contactInfo}
+            {customerInfo}
             {billingAddress}
           </Card>
         );

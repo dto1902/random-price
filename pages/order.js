@@ -5,16 +5,15 @@ import { Page, Layout, Button, Banner, Toast, Card } from '@shopify/polaris';
 import store from 'store-js';
 import { Note } from '../createOrder/Note';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
-import { FindOrCreateCustomer, customerId } from '../createOrder/Customer/FindOrCreateCustomer'
+import { FindOrCreateCustomer } from '../createOrder/Customer/FindOrCreateCustomer'
 import { ShippingAddress } from '../createOrder/RecipientInfo';
 import { RecipientReferentName } from '../createOrder/RecipientReferentName';
 import { DeliveryDate } from '../createOrder/DeliveryDate';
 import { PickUpDate } from '../createOrder/PickUpDate';
 import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
-import { discountObject } from '../createOrder/Produtcs/ModalPrice';
-import { allProducts } from '../createOrder/Produtcs/ResourceListProducts';
 import { StaffNotes } from '../createOrder/StaffNotes'
 import { TablePayments } from '../createOrder/TablePayments'
+import { ButtonCreateOrder } from '../createOrder/ButtonCreateOrder'
 
 function Order () {
   const [valueBrowse, setValueBrowse] = useState('');
@@ -22,10 +21,7 @@ function Order () {
   const [resourcesIds, setResourcesIds] = useState(({'ids': []}));
   const [noteValue, setNoteValue] = useState('');
 
-  var DraftOrderLineItemInput = [];
-  var inputQty = 1;
-
-    return ( // Uses mutation's input to update product prices
+    return (
     <Mutation mutation={CREATE_ORDER}>
         {(handleSubmit, {error, data }) => {
         const [hasResults, setHasResults] = useState(false);
@@ -95,79 +91,10 @@ function Order () {
             <TablePayments />
           </Layout.Section>
           <Layout.Section>
-          <Button
-            primary
-            textAlign={"center"}
-            onClick={() => {
-              DraftOrderLineItemInput = [];
-              for( let i = 0; i < allProducts.length; i++) {
-                inputQty = document.getElementById('id:' + allProducts[i].id).value;
-                var indiceDiscount = discountObject.findIndex(ind => ind.id.toString() === allProducts[0].id.toString());
-                if (discountObject[indiceDiscount]) {
-                  var type = discountObject[indiceDiscount].type;
-                  var value = discountObject[indiceDiscount].value;
-                  var reason = discountObject[indiceDiscount].reason;
-                } else {
-                  var type = 'FIXED_AMOUNT', value = 0, reason = '';
-                }
-                if (allProducts[i].newProduct) {
-                  DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
-                    "title": allProducts[i].product.title,
-                    "originalUnitPrice": allProducts[i].price,
-                    "quantity":  parseInt(inputQty),
-                    "requiresShipping": allProducts[i].shipping,
-                    "taxable": allProducts[i].taxable,
-                    "appliedDiscount": {
-                      "valueType": type,
-                      "value": parseInt(value),
-                      "title": reason,
-                    },
-                  })
-                } else {
-                  DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
-                    "variantId": allProducts[i].id,
-                    "quantity":  parseInt(inputQty),
-                    "appliedDiscount": {
-                      "valueType": type,
-                      "value": parseInt(value),
-                      "title": reason,
-                    },
-                  })
-                }
-              }
-              let attributes = [
-              {
-                "key": "delivery-date",
-                "value": document.getElementById('datePicker').value
-              },
-              {
-                "key": "Pickup-Time",
-                "value": document.getElementById('Pickup-Time').value
-              },
-              {
-                "key": "Staff-Notes",
-                "value": document.getElementById('StaffNotesValue').value
-              }
-              ]
-              
-              console.log(customerId[0])
-              let promise = new Promise((resolve) => resolve());
-
-              let draftOrderInput = {
-                  lineItems: 
-                    DraftOrderLineItemInput,
-                  note: noteValue,
-                  customAttributes: attributes,
-                  customerId: customerId[0],
-              }
-              promise = promise.then(() => handleSubmit({ variables: { input: draftOrderInput }}))
-                  .then(response => {console.log(response)});
-
-              }
-              }
-            >
-                Create Order
-          </Button>
+            <ButtonCreateOrder 
+              noteValue={noteValue}
+              handleSubmit={handleSubmit}
+            />
           </Layout.Section>
         </Layout>
       </Page>
