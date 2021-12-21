@@ -6,7 +6,7 @@ import store from 'store-js';
 import { Note } from '../createOrder/Note';
 import OrderTypeButtons from '../createOrder/OrderTypeButtons';
 import { FindOrCreateCustomer } from '../createOrder/Customer/FindOrCreateCustomer'
-import { ShippingAddress } from '../createOrder/RecipientInfo';
+import { ShippingAddress } from '../createOrder/ShippingAddress/RecipientInfo';
 import { RecipientReferentName } from '../createOrder/RecipientReferentName';
 import { DeliveryDate } from '../createOrder/DeliveryDate';
 import { PickUpDate } from '../createOrder/PickUpDate';
@@ -20,6 +20,7 @@ function Order () {
   const [open, setOpen] = useState(false);
   const [resourcesIds, setResourcesIds] = useState(({'ids': []}));
   const [noteValue, setNoteValue] = useState('');
+  const [customerSelectedId, setCustomerSelectedId] = useState('');
 
     return (
     <Mutation mutation={CREATE_ORDER}>
@@ -51,17 +52,23 @@ function Order () {
               </Card.Section>
             </Card>
           </Layout.Section>
-          <Layout.Section oneThird>
-            <FindOrCreateCustomer />
-          </Layout.Section>
-          <Layout.Section oneThird>
+          {/* <Layout.Section twoThird> */}
+            <FindOrCreateCustomer 
+              customerSelectedId={customerSelectedId}
+              setCustomerSelectedId={setCustomerSelectedId}
+            />
+          {/* </Layout.Section> */}
+          {/* <Layout.Section oneThird>
             <div id='RecipientInfo'>
-              <ShippingAddress />
+              <ShippingAddress 
+                customerSelectedId={customerSelectedId}
+                setCustomerSelectedId={setCustomerSelectedId}
+              />
             </div>
             <div id='RecipientReferentName' style={{display:'none'}}>
               <RecipientReferentName />
             </div>
-          </Layout.Section>
+          </Layout.Section> */}
           <Layout.Section oneThird>
             <div id='DeliveryDate'>
               <DeliveryDate />

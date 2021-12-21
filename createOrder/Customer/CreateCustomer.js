@@ -22,7 +22,6 @@ const CUSTOMER_CREATE = gql`
 function CreateCustomer(props) {
 
   const handleModalChange = useCallback(() => props.setActive(!props.active), [props.active]);
-  const [selectedExport, setSelectedExport] = useState('');
   const [firstName, setFirstName] = useState('');
   const firstNameChange = useCallback((newValue) => setFirstName(newValue), []);
   const [lastName, setLastName] = useState('');
@@ -49,7 +48,7 @@ function CreateCustomer(props) {
   const postalCodeChange = useCallback((newValue) => setPostalCodeValue(newValue), []);
   const [phoneValue, setPhoneValue] = useState('');
   const phoneChange = useCallback(newValue => setPhoneValue(newValue), []);
-
+  const [loading, setLoading] = useState(false)
   const handleClose = () => {
     handleModalChange();
   };
@@ -70,55 +69,66 @@ function CreateCustomer(props) {
           onDismiss={() => setHasResults(false)}
           />
       );
+      
   return (
     <Form>
       <Modal
         open={props.active}
         onClose={handleClose}
         title="Create a new customer"
+        loading={loading}
         primaryAction={{
+          type:'submit',
           content: 'Create customer',
           onAction: () => {
-          let customerCreate = 
-          {
-            "firstName":firstName,
-            "lastName":lastName,
-            "email":emailName,
-            "acceptsMarketing":checkedMarketing,
-            "taxExempt":checkedtax,
-            "addresses":{
-              "company":companyValue,
-              "address1":addressValue,
-              "address2":address2Value,
-              "city":cityValue,
-              "country":countryValue,
-              "province":regionValue,
-              "provinceCode":postalCodeValue,
-              "phone":phoneValue
-            },
-          }
-      console.log(customerCreate)
-      let promise = new Promise((resolve) => resolve());
+            setLoading(true)
+            let customerCreate = 
+            {
+              "firstName":firstName,
+              "lastName":lastName,
+              "email":emailName,
+              "acceptsMarketing":checkedMarketing,
+              "taxExempt":checkedtax,
+              "addresses":{
+                "company":companyValue,
+                "address1":addressValue,
+                "address2":address2Value,
+                "city":cityValue,
+                "country":countryValue,
+                "province":regionValue,
+                "provinceCode":postalCodeValue,
+                "phone":phoneValue
+              },
+            };
+      
+          let promise = new Promise((resolve) => resolve());
 
-      promise = promise.then(() => handleSubmit({ variables: { input: customerCreate }}))
-          .then(response => {console.log(response)})
-          .then(() => {
-            setFirstName('');
-            setLastName('');
-            setEmailName('');
-            setCheckedMarketing(false);
-            setCheckedtax(false);
-            setCompanyValue('');
-            setAddressValue('');
-            setAddressValue2();
-            setCityValue('');
-            setCountryValue('');
-            setRegionValue('');
-            setPostalCodeValue('');
-            setPhoneValue('');
-            handleModalChange();
-          })
-        }}}
+          promise = promise.then(() => handleSubmit({ variables: { input: customerCreate }}))
+              .then(response => {
+                setLoading(false)
+                console.log(response),
+                props.setNames(`${firstName} ${lastName}`),
+                props.setEmailCustomer(emailName),
+                props.setPhoneCustomer('No phone number'),
+                props.setAddressesFirstName(firstName),
+                props.setAddressesLastName(lastName),
+                props.setAddressesCompany(companyValue),
+                props.setAddressesaddress1(addressValue),
+                props.setAddressesaddress2(address2Value),
+                props.setAddressesZip(postalCodeValue),
+                props.setAddressesCity(cityValue),
+                props.setAddressesProvinceCode(regionValue),
+                props.setAddressesCountry(countryValue),
+                props.setAddressesPhone(phoneValue),
+                props.setOrdersCountCustomer('0')
+                props.setCustomerSelectedId([response.data.customerCreate.customer.id])
+              })
+              .catch((resp) => {
+                console.log(resp);
+                alert('The customer has not been created. Please check the fields and try again');
+                setLoading(false)
+              })
+            }}}
         secondaryActions={[
           {
             content: 'Cancel',
@@ -241,70 +251,6 @@ function CreateCustomer(props) {
                 onChange={phoneChange}
               />
             </Layout.Section>
-            {/* <Layout.Section fullWidth>
-              <div style={{textAlign: 'right'}}> 
-                <Button
-                  textAlign={"center"}
-                  paddingLeft="5px"
-                  onClick={() => {
-                    handleModalChange();
-                  }}
-                >
-                  Cancel
-                </Button>
-              
-              <Button
-                primary
-                paddingRight="5px"
-                textAlign={"center"}
-                onClick={() => {
-                  let customerCreate = 
-                    {
-                      "firstName":firstName,
-                      "lastName":lastName,
-                      "email":emailName,
-                      "acceptsMarketing":checkedMarketing,
-                      "taxExempt":checkedtax,
-                      "addresses":{
-                        "company":companyValue,
-                        "address1":addressValue,
-                        "address2":address2Value,
-                        "city":cityValue,
-                        "country":countryValue,
-                        "province":regionValue,
-                        "provinceCode":postalCodeValue,
-                        "phone":phoneValue
-                      },
-                    }
-                console.log(customerCreate)
-                let promise = new Promise((resolve) => resolve());
-
-                promise = promise.then(() => handleSubmit({ variables: { input: customerCreate }}))
-                    .then(response => {console.log(response)})
-                    .then(() => {
-                      setFirstName('');
-                      setLastName('');
-                      setEmailName('');
-                      setCheckedMarketing('');
-                      setCheckedtax('');
-                      setCompanyValue('');
-                      setAddressValue('');
-                      setAddressValue2();
-                      setCityValue('');
-                      setCountryValue('');
-                      setRegionValue('');
-                      setPostalCodeValue('');
-                      setPhoneValue('');
-                      handleModalChange();
-                    })
-
-                }
-                }
-                >
-                  Create Customer
-              </Button>
-              </div>
-            </Layout.Section> */}
           </Layout>
         </Modal.Section>
       </Modal>

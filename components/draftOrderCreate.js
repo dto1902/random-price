@@ -76,8 +76,7 @@ class DraftOrderCreate extends React.Component {
                                         content: 'Select products',
                                         onAction: () => this.setState({ open: true }),
                                     }}
-                                    >
-
+                                >
                                 </EmptyState> 
                             </Card.Section>
                             <ResourcePicker

@@ -3,7 +3,7 @@ import { Button } from "@shopify/polaris";
 import { allProducts } from '../createOrder/Produtcs/ResourceListProducts';
 import { customerId } from '../createOrder/Customer/FindOrCreateCustomer'
 import { discountObject } from '../createOrder/Produtcs/ModalPrice';
-
+import { billingAddress, shippingAddress } from './Customer/FindOrCreateCustomer'
 function ButtonCreateOrder(props) {
     
     var DraftOrderLineItemInput = [];
@@ -24,6 +24,7 @@ function ButtonCreateOrder(props) {
                 } else {
                 var type = 'FIXED_AMOUNT', value = 0, reason = '';
                 }
+                console.log(billingAddress)
                 if (allProducts[i].newProduct) {
                 DraftOrderLineItemInput = DraftOrderLineItemInput.concat({
                     "title": allProducts[i].product.title,
@@ -72,6 +73,8 @@ function ButtonCreateOrder(props) {
                 note: props.noteValue,
                 customAttributes: attributes,
                 customerId: customerId[0],
+                billingAddress: billingAddress,
+                shippingAddress: shippingAddress
             }
             promise = promise.then(() => props.handleSubmit({ variables: { input: draftOrderInput }}))
                 .then(response => {console.log(response)});
