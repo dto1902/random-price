@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { GET_PRODUCTS_BY_ID } from './GraphQl/QueryGetProducts'
 import { Query } from 'react-apollo';
 import {
@@ -14,28 +14,29 @@ import {
 } from '@shopify/polaris';
 import { ResourcePicker } from '@shopify/app-bridge-react';
 import store from 'store-js';
-import { ModalNewProduct } from './ModalNewProduct';
-import { ValueQuantity } from './InputQuantity';
-import { rowMarkup2 } from './ModalNewProduct'
+import { ModalNewProduct, NewProduct } from './ModalNewProduct';
+import { ValueQuantity, allProductsQuantity } from './InputQuantity';
+import { discount } from '../TablePayments/ModalAddDiscount';
+import { shippingAddress } from '../ShippingAddress/modalShippimgAddress';
+import { shippingLine } from '../TablePayments/ModalAddShipping';
 
 // GraphQL query that retrieves products by ID
 
 
-var allProducts = [];
-console.log(`in resourceLP row2${rowMarkup2}`)
+var allProducts = [], ResourceProducts = [], qty = 1;
 function ResourceListProducts(props) {
   const {selectedResources, allResourcesSelected, handleSelectionChange} = useIndexResourceState([]);
-  var [newProduct, setNewProduct] = useState([]);
+  const [rowMarkup2, setRowMarkup2] = useState([]);
+  const [newProductsCalculate, setNewProductsCalculate] = useState([]);
 
     return (
         <Query query={GET_PRODUCTS_BY_ID} variables={ props.resourcesIds }>
           {({ data, loading, error }) => { // Refetches products by ID
             if (loading) return 'Loading...';
             if (error) return <p>{error.message}</p>;
-
+            
             const nodesById = {};
             data.nodes.forEach(node => nodesById[node.id] = node);
-
             var arraySeletedProducts = '', arraySeletedVariants = '';
 
             arraySeletedVariants = data.nodes.map(getIdsVariants);
@@ -55,16 +56,60 @@ function ResourceListProducts(props) {
             const handleSelection = (resources) => {
               const idsFromVariantResources = resources.selection.map(( product ) => product.variants);
               var idsFromVariantResources2 = [];
+              var productsCalculate = [];
               var idsFromVariantResources3 = [];
               for (let i = 0; i < idsFromVariantResources.length; i++) {
                 var idsFromVariantResources2 = idsFromVariantResources2.concat(idsFromVariantResources[i]);
                 for (let j = 0; j < idsFromVariantResources[i].length; j++){
                   var idsFromVariantResources3 = idsFromVariantResources3.concat(idsFromVariantResources[i][j].id);
+
+                  if (ResourceProducts[i]){
+                    if (ResourceProducts[i].variantId == idsFromVariantResources[i][j].id){
+                      qty = parseInt(ResourceProducts[i].quantity);
+                    }
+                  } else {
+                    qty = parseInt(1);
+                  }productsCalculate.push({
+                    "variantId": idsFromVariantResources[i][j].id,
+                    "quantity": qty,
+                    "appliedDiscount": null
+                  })
                 }
               };
               props.setOpen(false);
-              store.set('ids', idsFromVariantResources3)
-              props.setResourcesIds({'ids': idsFromVariantResources3})
+              store.set('ids', idsFromVariantResources3);
+              props.setResourcesIds({'ids': idsFromVariantResources3});
+              props.setBannerError('');
+              props.setProductsCalculate(productsCalculate);
+              ResourceProducts = (productsCalculate)
+              let promise = new Promise((resolve, reject) => resolve());
+              let orderCalculateSubTotal = {
+                lineItems: productsCalculate.concat(newProductsCalculate),
+              }
+              let orderCalculateTotal = {
+                lineItems: productsCalculate.concat(newProductsCalculate),
+                appliedDiscount: discount,
+                shippingAddress: shippingAddress,
+                shippingLine: shippingLine
+              }
+              promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateSubTotal }}))
+                .then(response => {
+                  props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
+                })
+              promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
+              .then(response => {
+                props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
+                props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)).toLocaleString("en-US", {style:"currency", currency:"USD"}))
+                if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
+                  props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
+                  props.setTotalTax(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax).toLocaleString("en-US", {style:"currency", currency:"USD"}));
+                } else {
+                  props.setTaxPercentage('Not collected');
+                  props.setTotalTax(0);
+                };
+                props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
+                props.setTotalPrice(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice).toLocaleString("en-US", {style:"currency", currency:"USD"}));
+              })
             };
 
             const products = [data.nodes];
@@ -79,9 +124,8 @@ function ResourceListProducts(props) {
               },
             ];
             
-            allProducts = (data.nodes.concat(newProduct))
-            
-            var rowMarkup = allProducts.map(getTable);
+            allProducts = (data.nodes.concat(NewProduct))
+            var rowMarkup = data.nodes.map(getTable);
             function getTable(getTable) {
               if (getTable.title === 'Default Title'){
                 var titleProduct = getTable.product.title;
@@ -122,16 +166,7 @@ function ResourceListProducts(props) {
               }
               var id = getTable.id;
               var price = getTable.price;
-              if ( getTable.sku === "Not/Aplicated" ) {
-                if (getTable.shipping) { 
-                  var sku = 'Requires shipping';
-                } else {
-                  var sku = 'Does not require shipping'
-                }
-              } else {
-                var sku = `SKU: ${getTable.sku}`;
-              }
-              
+              var sku = getTable.sku;
               var onlyproductid = `${data.shop.url}/admin/products/${getTable.product.legacyResourceId}`;
               if (getTable.inventoryItem.tracked) {
                 var max = getTable.inventoryQuantity
@@ -140,11 +175,11 @@ function ResourceListProducts(props) {
               }
               return  (
                   <IndexTable.Row
-                  id={id} 
-                  key={id}
-                  selected={selectedResources.includes(id)}
-                  index= {props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
-                    >
+                    id={id} 
+                    key={id}
+                    selected={selectedResources.includes(id)}
+                    // index= {props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString())}
+                  >
                     <IndexTable.Cell>{media}</IndexTable.Cell>
                       <ValueQuantity 
                         max={max} 
@@ -156,7 +191,20 @@ function ResourceListProducts(props) {
                         sku={sku}
                         resourcesIds={props.resourcesIds}
                         setResourcesIds={props.setResourcesIds}
-                        quantity={getTable.quantity}
+                        productsCalculate = {props.productsCalculate}
+                        setProductsCalculate = {props.setProductsCalculate}
+                        handleSubmit={props.handleSubmit}
+                        setSubTotalPrice={props.setSubTotalPrice}
+                        quantity={qty}
+                        newProductsCalculate={newProductsCalculate}
+                        setNewProductsCalculate={setNewProductsCalculate}
+                        setDiscountAmount={props.setDiscountAmount}
+                        setTaxPercentage={props.setTaxPercentage}
+                        setAddShippingReason={props.setAddShippingReason}
+                        setAddShipping={props.setAddShipping}
+                        setTotalTax={props.setTotalTax}
+                        setTaxLines={props.setTaxLines}
+                        setTotalPrice={props.setTotalPrice}
                       />
                     <IndexTable.Cell>
                       <Button
@@ -165,25 +213,49 @@ function ResourceListProducts(props) {
                         onClick={() => {
                           let indiceVariantId = props.resourcesIds.ids.findIndex(ind => ind.toString() === id.toString());
                           let positionIndVariantId = parseInt(indiceVariantId);
-                          if (positionIndVariantId === -1) {
-                            let indiceNewProduct = newProduct.findIndex(ind => ind.id.toString() === id.toString());
-                            let positionNewProduct = parseInt(indiceNewProduct);
-                            let indiceNewProduct2 = allProducts.findIndex(ind => ind.id.toString() === id.toString());
-                            let positionNewProduct2 = parseInt(indiceNewProduct2);
-                            console.log(data.nodes)
-                            data.nodes.splice( positionNewProduct2, 1);
-                            console.log(data.nodes)
-                            console.log(positionIndVariantId)
-                            console.log(newProduct)
-                            console.log(data.nodes)
-                            console.log(allProducts)
-                            
-                          } else {
-                            props.resourcesIds.ids.splice( positionIndVariantId, 1);
-                            data.nodes.splice( positionIndVariantId, 1);
-                            store.set('ids', props.resourcesIds.ids)
-                            props.setResourcesIds({'ids': props.resourcesIds.ids});
+                          props.resourcesIds.ids.splice( positionIndVariantId, 1);
+                          data.nodes.splice( positionIndVariantId, 1);
+                          store.set('ids', props.resourcesIds.ids);
+                          props.setResourcesIds({'ids': props.resourcesIds.ids});
+
+                          props.productsCalculate.splice(positionIndVariantId, 1);
+                          let promise = new Promise((resolve) => resolve());
+                          // let orderCalculate = {
+                          //     lineItems: props.productsCalculate
+                          // }
+                          let orderCalculateTotal = {
+                            lineItems: ResourceProducts.concat(newProductsCalculate),
+                            appliedDiscount: discount,
+                            shippingAddress: shippingAddress,
+                            shippingLine: shippingLine
                           }
+                          // promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculate }}))
+                          //     .then(response => {
+                          //       if (response.data.draftOrderCalculate.userErrors[0]){
+                          //         props.setSubTotalPrice(0);
+                          //       } else {
+                          //       props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
+                          //       }
+                          //     })
+                              promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
+                              .then(response => {
+                                if (response.data.draftOrderCalculate.userErrors[0]){
+                                  props.setSubTotalPrice(0);
+                                } else {
+                                props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
+                                }
+                                props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
+                                props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)).toLocaleString("en-US", {style:"currency", currency:"USD"}))
+                                if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
+                                  props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
+                                  props.setTotalTax(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax).toLocaleString("en-US", {style:"currency", currency:"USD"}));
+                                } else {
+                                  props.setTaxPercentage('Not collected');
+                                  props.setTotalTax(0);
+                                };
+                                props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
+                                props.setTotalPrice(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice).toLocaleString("en-US", {style:"currency", currency:"USD"}));
+                              })
                         }}
                       >
                         X
@@ -192,7 +264,6 @@ function ResourceListProducts(props) {
                   </IndexTable.Row>
               )
             };
-
             return (
               <Card>
                 <Card.Section>
@@ -203,11 +274,17 @@ function ResourceListProducts(props) {
                       </Heading>
                     </Stack.Item>
                     <Stack.Item>
-                      <ModalNewProduct 
-                      newProduct={newProduct}
-                      setNewProduct={setNewProduct}
-                      resourcesIds={props.resourcesIds}
-                      setResourcesIds={props.setResourcesIds}
+                      <ModalNewProduct
+                        resourcesIds={props.resourcesIds}
+                        setResourcesIds={props.setResourcesIds}
+                        rowMarkup2={rowMarkup2}
+                        setRowMarkup2={setRowMarkup2}
+                        productsCalculate = {props.productsCalculate}
+                        setProductsCalculate = {props.setProductsCalculate}
+                        handleSubmit={props.handleSubmit}
+                        setSubTotalPrice={props.setSubTotalPrice}
+                        newProductsCalculate={newProductsCalculate}
+                        setNewProductsCalculate={setNewProductsCalculate}
                       />
                     </Stack.Item>
                   </Stack>
@@ -230,6 +307,7 @@ function ResourceListProducts(props) {
                     />
                   <IndexTable
                     resourceName={resourceName}
+                    firstRowSticky={false}
                     itemCount={products.length}
                     selectedItemsCount={
                       allResourcesSelected ? 'All' : selectedResources.length
@@ -263,4 +341,4 @@ function ResourceListProducts(props) {
     );
 
 }
-export { ResourceListProducts, allProducts }
+export { ResourceListProducts, allProducts, ResourceProducts }

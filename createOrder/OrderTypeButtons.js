@@ -24,10 +24,10 @@ function OrderTypeButtons() {
 
   return <ButtonGroup fullWidth>
       <Button pressed={isFirstButtonActive} onClick={handleFirstButtonClick} primary={true}>
-        First button
+        Local Delivery
       </Button>
       <Button pressed={!isFirstButtonActive} onClick={handleSecondButtonClick} primary={true}>
-        Second button
+        Pick Up
       </Button>
     </ButtonGroup>;
 }

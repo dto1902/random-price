@@ -2,12 +2,8 @@ import React, {useCallback, useState} from 'react';
 import store from 'store-js';
 import {Button, Modal, TextField, Layout, Checkbox, Select, Thumbnail, IndexTable, TextStyle, useIndexResourceState} from '@shopify/polaris';
 import { ValueQuantity } from './InputQuantity';
-import { ResourceProducts } from '../Produtcs/ResourceListProducts';
-import { discount } from '../TablePayments/ModalAddDiscount';
-import { shippingLine } from '../TablePayments/ModalAddShipping';
-import { shippingAddress } from '../ShippingAddress/modalShippimgAddress';
 
-var NewProduct = [], NewProductCalculate = [];
+var NewProduct = [], newProductsCalculate = [];
 
 function ModalNewProduct(props) {
   const [active, setActive] = useState(false);
@@ -17,7 +13,7 @@ function ModalNewProduct(props) {
   const [taxableNewProduct, setTaxableNewProduct] = useState(true);
   const [shippingNewProduct, setShippingNewProduct] = useState(true);
   const {selectedResources, allResourcesSelected, handleSelectionChange} = useIndexResourceState([]);
-  
+
   const handleChange = useCallback(() => {
     setActive(!active), [active] 
     setItemNameValue(0);
@@ -45,51 +41,24 @@ function ModalNewProduct(props) {
     setQuantityNewProducts('1');
 
     for( let i = 0; i < NewProduct.length; i++){
-      var productsCalculate = [];
-      productsCalculate.push({
+      newProductsCalculate = [];
+      newProductsCalculate.push({
         "title": NewProduct[i].title,
         "quantity": parseInt(NewProduct[i].quantity),
         "originalUnitPrice": NewProduct[i].price,
       })
     }
-    NewProductCalculate.push(productsCalculate[0]);
-    props.setNewProductsCalculate(NewProductCalculate);
-    // let promise = new Promise((resolve) => resolve());
-    // let orderCalculate = {
-    //   lineItems: props.productsCalculate.concat(NewProductCalculate)
-    // }
-
-    var allProducts = [];
-    allProducts = allProducts.concat(ResourceProducts, NewProductCalculate);
-    if (allProducts.length > 0){
-      let promise = new Promise((resolve, reject) => resolve());
-      let orderCalculateTotal = {
-        lineItems: allProducts,
-        appliedDiscount: discount,
-        shippingAddress: shippingAddress,
-        shippingLine: shippingLine
-      }
-
-      promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
+    props.setProductsCalculate(props.productsCalculate.concat(newProductsCalculate));
+    let promise = new Promise((resolve) => resolve());
+    let orderCalculate = {
+      lineItems: props.productsCalculate.concat(newProductsCalculate)
+    }
+    promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculate }}))
       .then(response => {
         props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
-        props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
-        props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)))
-        if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
-          props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
-          props.setTotalTax(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax);
-          props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
-        } else {
-          props.setTaxLines([]);
-          props.setTaxPercentage('Not calculate');
-          props.setTotalTax(0);
-        }
-        props.setTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice);
-        console.log(response);
-      })
-    }
-    setActive(!active), [active];
-    props.setRowMarkup2(NewProduct.map(getTable));
+      });
+      setActive(!active), [active];
+      props.setRowMarkup2(NewProduct.map(getTable));
     };
     
     function getTable(getTable) {
@@ -97,6 +66,7 @@ function ModalNewProduct(props) {
       var max = '1000';
       var titleProduct = getTable.product.title;
       var price = getTable.price;
+      var qty = getTable.quantity;
       if (getTable.shipping) { 
         var sku = 'Requires shipping';
       } else {
@@ -134,20 +104,12 @@ function ModalNewProduct(props) {
               sku={sku}
               resourcesIds={props.resourcesIds}
               setResourcesIds={props.setResourcesIds}
-              quantity={getTable.quantity}
+              quantity={qty}
               handleSubmit={props.handleSubmit}
               setSubTotalPrice={props.setSubTotalPrice}
               productsCalculate = {props.productsCalculate}
               setProductsCalculate = {props.setProductsCalculate}
-              newProductsCalculate = {props.newProductsCalculate}
-              setProductsCalculate = {props.setProductsCalculate}
-              setDiscountAmount={props.setDiscountAmount}
-              setTaxPercentage={props.setTaxPercentage}
-              setAddShippingReason={props.setAddShippingReason}
-              setAddShipping={props.setAddShipping}
-              setTotalTax={props.setTotalTax}
-              setTaxLines={props.setTaxLines}
-              setTotalPrice={props.setTotalPrice}
+              newProductsCalculate = {newProductsCalculate}
           />
           <IndexTable.Cell>
             <Button
@@ -157,35 +119,7 @@ function ModalNewProduct(props) {
                     let indiceNewProduct = NewProduct.findIndex(ind => ind.id.toString() === id.toString());
                     let positionIndVariantId = parseInt(indiceNewProduct);
                     NewProduct.splice( positionIndVariantId, 1);
-                    NewProductCalculate.splice( positionIndVariantId, 1);
                     props.setRowMarkup2(props.rowMarkup2);
-                    var allProducts = [];
-                    
-                    allProducts = allProducts.concat(ResourceProducts, NewProductCalculate);
-                      let promise = new Promise((resolve, reject) => resolve());
-                      let orderCalculateTotal = {
-                        lineItems: allProducts,
-                        appliedDiscount: discount,
-                        shippingAddress: shippingAddress,
-                        shippingLine: shippingLine
-                      }
-                
-                      promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
-                      .then(response => {
-                        props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
-                        props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
-                        props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)))
-                        if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
-                          props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
-                          props.setTotalTax(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax);
-                          props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
-                        } else {
-                          props.setTaxLines([]);
-                          props.setTaxPercentage('Not calculate');
-                          props.setTotalTax(0);
-                        }
-                        props.setTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice);
-                      })
                 }}
             >
               X
@@ -293,4 +227,4 @@ function ModalNewProduct(props) {
     </span>
   );
 }
-export { ModalNewProduct, NewProduct, NewProductCalculate }
+export { ModalNewProduct, NewProduct }

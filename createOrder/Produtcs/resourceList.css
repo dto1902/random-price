@@ -40,3 +40,14 @@
    border: 0.1rem solid rgba(186, 191, 195, 1);
    border-radius: 5px;
 }
+.Polaris-DataTable__Cell--header {
+    border-bottom: 0;
+};
+@media (min-width: 48em){ .Polaris-DataTable__TableRow:hover .Polaris-DataTable__Cell{ background:var(--p-surface-hovered); } }
+.Polaris-DataTable__TableRow + .Polaris-DataTable__TableRow .Polaris-DataTable__Cell{ border-top: 0; }
+
+.Polaris-DataTable--cellTotalFooter {
+    border-top: 0;
+};
+@media (min-width: 48em){ .Polaris-DataTable__TableRow:hover .Polaris-DataTable__Cell{ background:var(--p-surface-hovered); } }
+.Polaris-DataTable__Cell{ padding:0.9rem;}

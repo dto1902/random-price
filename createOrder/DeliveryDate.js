@@ -22,31 +22,43 @@ function DeliveryDate(props) {
   
   return (
     <Card>
-      <Card.Section>
-      <p>Delivery Date</p>
-       <DatePicker
-        selected={startDate}
-        className='test'
-        id="datePicker"
-        onChange={(date) => {
-          setStartDate(date)
-        }
-        } />
-      </Card.Section>
-      <Card.Section>
-        <p>Pick Up Time</p>
-        <TimePicker
-          id='Pickup-Time'
-          open={open}
-          onOpen={timerOpen}
-          onClose={timerClose}
-          minuteStep={60}
-          showSecond={false}
-          style={{ width: 100 + '%' }}
-          onChange={onChange}
-          disabledHours={() => [0,1,2,3,4,5,6,7,12,13,19,20,21,22,23]}
-        />
-      </Card.Section>
+    <div style={{width: '100%', display: 'flex'}}>
+      <div style={{width: '50%'}}>
+        <Card.Section>
+        <p>Delivery Date</p>
+        <DatePicker
+          minDate={new Date()}
+          selected={startDate}
+          className='test'
+          id="datePicker"
+          autoComplete="new-password---"
+          onChange={(date) => {
+            setStartDate(date)
+          }}
+          onFocus={() => {
+            document.getElementById('datePicker').className = 'test'
+            
+          }}
+          />
+        </Card.Section>
+      </div>
+      <div style={{width: '50%'}}>
+        <Card.Section>
+          <p>Delivery Time</p>
+          <TimePicker
+            id='Pickup-Time'
+            open={open}
+            onOpen={timerOpen}
+            onClose={timerClose}
+            minuteStep={60}
+            showSecond={false}
+            style={{ width: 100 + '%' }}
+            onChange={onChange}
+            disabledHours={() => [0,1,2,3,4,5,6,7,12,13,19,20,21,22,23]}
+          />
+        </Card.Section>
+      </div>
+    </div>
     </Card>
   );
 }

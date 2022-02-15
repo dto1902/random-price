@@ -8,6 +8,7 @@ query getProductsVariants($ids: [ID!]!) {
       price
       title
       sku
+      position
       inventoryQuantity
       inventoryItem {
         tracked
@@ -34,6 +35,7 @@ query getProductsVariants($ids: [ID!]!) {
   }
   shop {
     url
+    currencyCode
   }
 }
 `;

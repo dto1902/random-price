@@ -38,13 +38,6 @@ function ValueQuantity(props) {
     allProducts = allProducts.concat(ResourceProducts, NewProductCalculate);
     allProductsQuantity = allProducts;
     let promise = new Promise((resolve) => resolve());
-    let orderCalculateSubTotal = {
-      lineItems: allProducts,
-    }
-    promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateSubTotal }}))
-      .then(response => {
-        props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
-      })
     let orderCalculateTotal = {
         lineItems: allProducts,
         appliedDiscount: discount,
@@ -53,20 +46,21 @@ function ValueQuantity(props) {
     }
     promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
       .then(response => {
+        props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
         if(response.data.draftOrderCalculate.calculatedDraftOrder.appliedDiscount){
-        props.setDiscountAmount(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.appliedDiscount.value));
+        props.setDiscountAmount(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.appliedDiscount.value).toLocaleString("en-US", {style:"currency", currency:"USD"}));
         }
         props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
-        props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)))
+        props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)).toLocaleString("en-US", {style:"currency", currency:"USD"}))
       if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
         props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
-        props.setTotalTax(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax));
+        props.setTotalTax(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax).toLocaleString("en-US", {style:"currency", currency:"USD"}));
       } else {
         props.setTaxPercentage('Not calculate');
         props.setTotalTax(0);
       }
       props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
-      props.setTotalPrice(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice));
+      props.setTotalPrice(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice).toLocaleString("en-US", {style:"currency", currency:"USD"}));
     })
     setValueQuantityText(newValue), []
   });

@@ -11,9 +11,11 @@ import { RecipientReferentName } from '../createOrder/RecipientReferentName';
 import { DeliveryDate } from '../createOrder/DeliveryDate';
 import { PickUpDate } from '../createOrder/PickUpDate';
 import EmptyStateProducts from '../createOrder/Produtcs/EmptyState';
-import { StaffNotes } from '../createOrder/StaffNotes'
-import { TablePayments } from '../createOrder/TablePayments'
-import { ButtonCreateOrder } from '../createOrder/ButtonCreateOrder'
+import { StaffNotes } from '../createOrder/StaffNotes';
+import { TablePayments } from '../createOrder/TablePayments/TablePayments';
+import { ButtonCreateOrder } from '../createOrder/ButtonCreateOrder';
+import { BannerError } from '../createOrder/BannerError'
+import { TablePayments_2 } from '../createOrder/TablePayments/TablePayments-2'
 
 function Order () {
   const [valueBrowse, setValueBrowse] = useState('');
@@ -21,6 +23,8 @@ function Order () {
   const [resourcesIds, setResourcesIds] = useState(({'ids': []}));
   const [noteValue, setNoteValue] = useState('');
   const [customerSelectedId, setCustomerSelectedId] = useState('');
+  const [bannerError, setBannerError] = useState('');
+  const [productsCalculate, setProductsCalculate] = useState([])
 
     return (
     <Mutation mutation={CREATE_ORDER}>
@@ -37,7 +41,20 @@ function Order () {
             onDismiss={() => setHasResults(false)}
             />
         );
-
+        var bannerfunction = "";
+        if (bannerError.length != 0){
+          bannerfunction = 
+            <Layout.Section fullWidth>
+              <Card>
+                <Card.Section>
+                  <BannerError 
+                    bannerError={bannerError}
+                    setBannerError={setBannerError}
+                  />
+                </Card.Section>
+              </Card>
+            </Layout.Section>
+        };
     return (
       <Page>
         {showToast}
@@ -45,6 +62,7 @@ function Order () {
             {showError}
         </Layout.Section>
         <Layout>
+          {bannerfunction}
           <Layout.Section fullWidth>
             <Card>
               <Card.Section>
@@ -53,10 +71,10 @@ function Order () {
             </Card>
           </Layout.Section>
           {/* <Layout.Section twoThird> */}
-            <FindOrCreateCustomer 
+            {/* <FindOrCreateCustomer 
               customerSelectedId={customerSelectedId}
               setCustomerSelectedId={setCustomerSelectedId}
-            />
+            /> */}
           {/* </Layout.Section> */}
           {/* <Layout.Section oneThird>
             <div id='RecipientInfo'>
@@ -69,38 +87,62 @@ function Order () {
               <RecipientReferentName />
             </div>
           </Layout.Section> */}
-          <Layout.Section oneThird>
+          {/* <Layout.Section oneThird>
             <div id='DeliveryDate'>
               <DeliveryDate />
             </div>
             <div id='PickUpDate' style={{display:'none'}}>
               <PickUpDate />
             </div>
-          </Layout.Section>
+          </Layout.Section> */}
           <Layout.Section>
-            <EmptyStateProducts
+            {/* <EmptyStateProducts
+              setProductsCalculate = {setProductsCalculate}
               open={open}
               setOpen={setOpen}
               valueBrowse={valueBrowse}
               setValueBrowse={setValueBrowse}
               resourcesIds={resourcesIds}
               setResourcesIds={setResourcesIds}
+              setBannerError={setBannerError}
+            /> */}
+            <TablePayments_2
+              productsCalculate = {productsCalculate}
+              setProductsCalculate = {setProductsCalculate}
+              open={open}
+              setOpen={setOpen}
+              valueBrowse={valueBrowse}
+              setValueBrowse={setValueBrowse}
+              resourcesIds={resourcesIds}
+              setResourcesIds={setResourcesIds}
+              setBannerError={setBannerError}
+              customerSelectedId={customerSelectedId}
+              setCustomerSelectedId={setCustomerSelectedId}
+              noteValue={noteValue}
+              setNoteValue={setNoteValue}
             />
+            {/* <TablePayments 
+              subTotal = {0}
+              productsCalculate={draftOrderCalculate}
+            /> */}
           </Layout.Section>
-          <Layout.Section secondary>
+          {/* <Layout.Section secondary>
             <Note 
               noteValue={noteValue}
               setNoteValue={setNoteValue}
             />
             <StaffNotes secondary/>
+          </Layout.Section> */}
+          <Layout.Section twoThird>
+            
           </Layout.Section>
-          <Layout.Section>
-            <TablePayments />
-          </Layout.Section>
+          {bannerfunction}
           <Layout.Section>
             <ButtonCreateOrder 
               noteValue={noteValue}
               handleSubmit={handleSubmit}
+              bannerError={bannerError}
+              setBannerError={setBannerError}
             />
           </Layout.Section>
         </Layout>

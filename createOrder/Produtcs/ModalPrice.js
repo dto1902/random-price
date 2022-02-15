@@ -8,10 +8,9 @@ function ModalPrice(props) {
   const [valueDiscount, setValueDiscount] = useState(0);
   const [valueReason, setValueReason] = useState('');
   
-  
-
   const handleChange = useCallback(() => { setActive(!active), [active] });
   const handleApply = useCallback(() => {
+    console.log('hello');
     if(selected === 'Amount') {
       let price = props.price;
       var seletedValue = 'FIXED_AMOUNT'
@@ -49,7 +48,23 @@ function ModalPrice(props) {
         "reason": valueReason
       })
     }
-    console.log(seletedValue);
+    for( let i = 0; i < props.productsCalculate.length; i++) {
+      var indiceDiscountPrice = props.productsCalculate.findIndex(ind => ind.variantId.toString() === props.id.toString());
+      props.productsCalculate[indiceDiscountPrice].appliedDiscount = {
+            "value": parseFloat(valueDiscount),
+            "valueType": seletedValue,
+            "title": valueReason
+          };
+    }
+    console.log(props.productsCalculate)
+    let promise = new Promise((resolve) => resolve());
+    let orderCalculate = {
+        lineItems: props.productsCalculate
+    }
+    promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculate }}))
+        .then(response => {
+          props.setSubTotalPrice(response.data.draftOrderCalculate.calculatedDraftOrder.subtotalPrice);
+        })
     setSelected('Amount');
     setValueDiscount('');
     setValueReason('');

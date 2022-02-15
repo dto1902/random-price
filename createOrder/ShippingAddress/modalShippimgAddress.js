@@ -3,28 +3,14 @@ import {Form, Modal, TextField, Layout, Checkbox, ActionList, Button, Card, Popo
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import { CountryDropdown, RegionDropdown, CountryRegionData } from 'react-country-region-selector';
-import gql from 'graphql-tag';
-import { Query } from 'react-apollo';
+import { NewProductCalculate } from '../Produtcs/ModalNewProduct';
+import { ResourceProducts } from '../Produtcs/ResourceListProducts';
+import { discount } from '../TablePayments/ModalAddDiscount';
+import { customerId, selectedShippingAddress } from '../Customer/FindOrCreateCustomer';
+import { shippingLine } from '../TablePayments/ModalAddShipping';
+import { taxExempt } from '../TablePayments/ModalTaxes';
 
-const GET_ADDRESSES = gql`
-query Customer($id: ID!)
-{
-  customer(id: $id) {
-    	addresses (first: 100){
-      firstName
-      lastName
-      company
-      address1
-      address2
-      zip
-      city
-      province
-      country
-      phone
-    }
-  }
-}
-`
+var shippingAddress = {};
 function ModalShippingAddress(props) {
     
   const [active, setActive] = useState(false);
@@ -48,7 +34,7 @@ function ModalShippingAddress(props) {
   const [postalCodeValue, setPostalCodeValue] = useState('');
   const postalCodeChange = useCallback((newValue) => setPostalCodeValue(newValue), []);
   const [phoneCustomer, setPhoneCustomer] = useState('')
-  const phoneChange = useCallback(newValue => setPhoneCustomer(newValue), []);
+  const phoneChange = useCallback(newValue => {setPhoneCustomer(newValue), []});
   const [popoverActive, setPopoverActive] = useState(true);
   const togglePopoverActive = useCallback(
     () => setPopoverActive((popoverActive) => !popoverActive),
@@ -56,23 +42,91 @@ function ModalShippingAddress(props) {
   );
   const popOveActivator = (
     <Button onClick={togglePopoverActive} disclosure>
-      More actions
+      Select address
     </Button>
   );
   const handleClose = () => {
     handleModalChange();
   };
   const saveInfo = useCallback(() => {
-      props.setShippingFirstName(firstName)
-      props.setShippingLastName(lastName)
-      props.setShippingCompany(company)
-      props.setShippingAddress1(address1)
-      props.setShippingAddress2(address2)
-      props.setShippingZip(postalCodeValue)
-      props.setShippingCity(city)
-      props.setShippingProvince(regionValue)
-      props.setShippingCountry(countryValue)
-      props.setShippingPhone(phoneCustomer)
+      props.setShippingFirstName(firstName);
+      props.setShippingLastName(lastName);
+      props.setShippingCompany(company);
+      props.setShippingAddress1(address1);
+      props.setShippingAddress2(address2);
+      props.setShippingZip(postalCodeValue);
+      props.setShippingCity(city);
+      props.setShippingProvince(regionValue);
+      props.setShippingCountry(countryValue);
+      props.setShippingPhone(phoneCustomer);
+
+      var allProducts = [];
+      allProducts = allProducts.concat(ResourceProducts, NewProductCalculate);
+      shippingAddress = {
+        firstName: firstName,
+        lastName: lastName,
+        address1: address1,
+        address2: address2,
+        phone: phoneCustomer,
+        city: city,
+        country: countryValue,
+        provinceCode: regionValue,
+        zip: postalCodeValue
+    }
+      var allProducts = [];
+      allProducts = allProducts.concat(ResourceProducts, NewProductCalculate);
+      if (allProducts.length > 0){
+        let promise = new Promise((resolve, reject) => resolve());
+        let orderCalculateShipping = {
+          lineItems: allProducts,
+          appliedDiscount: discount,
+          shippingAddress: shippingAddress,
+          shippingLine: shippingLine,
+          taxExempt: taxExempt
+        }
+      promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateShipping }}))
+        .then(response => {
+          if (response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates.length > 0) {
+            props.setValueRadioButton(response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates[0].handle);
+            var shippingLine_2 = {
+              price: response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates[0].price.amount,
+              shippingRateHandle: response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates[0].handle,
+              title: response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates[0].title
+            }
+            var orderCalculateTotal = {
+              lineItems: allProducts,
+              appliedDiscount: discount,
+              shippingAddress: shippingAddress,
+              shippingLine: shippingLine_2,
+              taxExempt: taxExempt
+            }
+          } else {
+            var orderCalculateTotal = {
+              lineItems: allProducts,
+              appliedDiscount: discount,
+              shippingAddress: shippingAddress,
+              shippingLine: shippingLine,
+              taxExempt: taxExempt
+            }
+          }
+
+          promise = promise.then(() => props.handleSubmit({ variables: { input: orderCalculateTotal }}))
+          .then(response => {
+            props.setArrayAvailableShippingRates(response.data.draftOrderCalculate.calculatedDraftOrder.availableShippingRates);
+            props.setAddShippingReason(orderCalculateTotal.shippingLine.title);
+            props.setAddShipping((parseFloat(orderCalculateTotal.shippingLine.price)))
+            if(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines.length > 0){
+              props.setTaxPercentage(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines[0].ratePercentage);
+              props.setTotalTax(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalTax));
+            } else {
+              props.setTaxPercentage('Not collected');
+              props.setTotalTax(0);
+            };
+            props.setTaxLines(response.data.draftOrderCalculate.calculatedDraftOrder.taxLines);
+            props.setTotalPrice(parseFloat(response.data.draftOrderCalculate.calculatedDraftOrder.totalPrice));
+          })
+        })
+      }
     handleModalChange();
   })
   const activator = 
@@ -83,26 +137,19 @@ function ModalShippingAddress(props) {
     Edit
   </Button>;
   var desSelectOptions = [];
-    if (props.customerSelectedId) {
-    return(
-      <Query query={GET_ADDRESSES} variables={{ id: String(props.customerSelectedId) }}>
-      {({ data, loading, error }) => {
-        if (loading) return 'loading'
-        if (error) return <p>{error.message}</p>;
-        if (data) {
-          desSelectOptions = data.customer.addresses.map((arrayAddress) =>{
-            return {
-              content: 
-                <div>
-                  <div>{arrayAddress.firstName} {arrayAddress.lastName}</div>
-                  <div>{arrayAddress.company}</div>
-                  <div>{arrayAddress.address1}</div>
-                  <div>{arrayAddress.address2}</div>
-                  <div>
-                    {arrayAddress.zip} {arrayAddress.city} {arrayAddress.province}
-                  </div>
-                  <div>{arrayAddress.country}</div>
-                </div>,
+  // var desSelectOptions2 = [];
+    // if (props.customerSelectedId) {
+          var desSelectOptions = selectedShippingAddress[0].map((arrayAddress) =>{
+            return ({
+              content:
+                <>
+                  <p>{arrayAddress.firstName} {arrayAddress.lastName}</p>
+                  <p>{arrayAddress.company}</p>
+                  <p>{arrayAddress.address1}</p>
+                  <p>{arrayAddress.address2}</p>
+                  <p>{arrayAddress.zip} {arrayAddress.city} {arrayAddress.province}</p>
+                  <p>{arrayAddress.country}</p>
+                </>,
               onAction:() => {
                 setFirstName(arrayAddress.firstName);
                 setLastName(arrayAddress.lastName);
@@ -116,16 +163,16 @@ function ModalShippingAddress(props) {
                 setPhoneCustomer(arrayAddress.phone);
                 togglePopoverActive();
               },
-            }
+            })
           })
-        };
+          console.log(desSelectOptions);
         return (
           <Form>
             <Modal
               activator={activator}
               open={active}
               onClose={handleClose}
-              title="Edit billing address"
+              title="Edit Recipient Info"
               primaryAction={[
                 {
                   content: 'Done',
@@ -199,6 +246,7 @@ function ModalShippingAddress(props) {
                       <div style={{width:"33.33" + "%", paddingRight:"5px"}}>
                         <p style={{marginBottom:"4px"}}>Country/region</p>
                           <CountryDropdown
+                            // valueType="short"
                             id='country'
                             classes='test'
                             value={countryValue}
@@ -206,8 +254,9 @@ function ModalShippingAddress(props) {
                           />
                         </div>
                       <div style={{width:"33.33" + "%", paddingLeft:"5px"}}>
-                        <p style={{marginBottom:"4px"}}>Province</p>
+                        <p style={{marginBottom:"4px"}}>State</p>
                         <RegionDropdown
+                          // countryValueType="short"
                           classes='test'
                           country={countryValue}
                           value={regionValue}
@@ -216,17 +265,16 @@ function ModalShippingAddress(props) {
                       </div>
                       <div style={{width:"33.33" + "%", paddingLeft:"10px"}}>
                       <TextField
-                        label="Postal Code"
+                        label="Zip Code"
                         value={postalCodeValue}
                         onChange={postalCodeChange}
                         autoComplete="off"
                       />
                       </div>
                     </div>
-                    <p style={{marginBottom:"4px"}}>Phone number</p>
-                    <PhoneInput
-                      inputClass='test'
-                      country={'us'}
+                    <p style={{marginBottom:"4px"}}>Phone</p>
+                    <input
+                      className = 'test'
                       value={phoneCustomer}
                       onChange={phoneChange}
                       autoComplete="nope"
@@ -237,13 +285,11 @@ function ModalShippingAddress(props) {
             </Modal>
           </Form>
         );
-    }}
-    </Query>
-    )} else {
-      return (
-      <Card>
-      </Card>
-      )
-    }
+  // } else {
+  //     return (
+  //     <Card>
+  //     </Card>
+  //     )
+  //   }
 }
-export { ModalShippingAddress }
+export { ModalShippingAddress, shippingAddress }

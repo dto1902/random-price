@@ -8,6 +8,10 @@ import { ModalEditCustomerInfo } from '../Customer/ModalEditCustomerInfo';
 import { ModalBillingAddress } from './ModalBillingAddress';
 import { CancelSmallMinor} from '@shopify/polaris-icons';
 import { ModalShippingAddress } from '../ShippingAddress/modalShippimgAddress';
+import { NewProductCalculate } from '../Produtcs/ModalNewProduct';
+import { ResourceProducts } from '../Produtcs/ResourceListProducts';
+import { discount } from '../TablePayments/ModalAddDiscount';import { DeliveryDate } from '../DeliveryDate';
+import { PickUpDate } from '../PickUpDate';
 
 const GET_CUSTOMERS = gql`
 query ($query: String!){
@@ -31,6 +35,7 @@ query ($query: String!){
           city
           country
           phone
+          id
         }
       }
     }
@@ -38,7 +43,7 @@ query ($query: String!){
 }
 `
 var customerId = '';
-var billingAddress = {}, ContactInformation = {}, shippingAddress ={};
+var billingAddress = {}, contactInformation = {}, shippingAddress ={}, selectedShippingAddress = [];
 function FindOrCreateCustomer(props) {
   const [inputValue, setInputValue] = useState('');
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -71,7 +76,7 @@ function FindOrCreateCustomer(props) {
   const [shippingPhone, setShippingPhone] = useState('');
   
   var loadingCustomers = false;
-  var selectedBillingAddress = [], selectedShippingAddress = [];
+  var selectedBillingAddress = [];
 
 return(
   <Query query={GET_CUSTOMERS} variables={{ query: inputValue }}>
@@ -109,13 +114,16 @@ return(
             });
             return matchedOption && matchedOption.onlyNames;
           });
-          setNames(selectedText[0]);
           const selectedContactInfo = selected.map((selectedItem) => {
             const matchedOption = options.find((option) => {
               return (option.value.match(selectedItem));
             });
-            return {'emailCustomer': matchedOption.email || 'No email', 'phoneCustomer': matchedOption.phone || 'No phone number', 'ordersCount': matchedOption.ordersCount};
+            return {
+              'emailCustomer': matchedOption.email || 'No email',
+              'phoneCustomer': matchedOption.phone || 'No phone number',
+              'ordersCount': matchedOption.ordersCount};
           });
+          setNames(selectedText[0]);
           setOrdersCountCustomer(selectedContactInfo[0].ordersCount);
           setEmailCustomer(selectedContactInfo[0].emailCustomer);
           setPhoneCustomer(selectedContactInfo[0].phoneCustomer);
@@ -124,7 +132,7 @@ return(
           setInputValue(selectedText[0]);
           props.setCustomerSelectedId(selected);
           customerId = selected;
-          console.log(customerId);
+          
           selectedBillingAddress = selected.map((selectedItem) => {
             const matchedOption = options.find((option) => {
               return (option.value.match(selectedItem));
@@ -171,55 +179,22 @@ return(
           const matchedOption = options.find((option) => {
             return (option.value.match(selectedItem));
           });
-          if(matchedOption.addresses[1]){
-            return {
-              'addressesFirstName': matchedOption.addresses[1].firstName,
-              'addressesLastName': matchedOption.addresses[1].lastName,
-              'addressesCompany': matchedOption.addresses[1].company,
-              'addressesaddress1': matchedOption.addresses[1].address1,
-              'addressesaddress2': matchedOption.addresses[1].address2,
-              'addressesZip': matchedOption.addresses[1].zip,
-              'addressesCity': matchedOption.addresses[1].city,
-              'addressesProvinceCode': matchedOption.addresses[1].provinceCode,
-              'addressesCountry': matchedOption.addresses[1].country,
-              'addressesPhone': matchedOption.addresses[1].phone,
-            };
-          }
+          return matchedOption.addresses
+          // if(matchedOption.addresses[1]){
+          //   return {
+          //     'addressesFirstName': matchedOption.addresses[1].firstName,
+          //     'addressesLastName': matchedOption.addresses[1].lastName,
+          //     'addressesCompany': matchedOption.addresses[1].company,
+          //     'addressesaddress1': matchedOption.addresses[1].address1,
+          //     'addressesaddress2': matchedOption.addresses[1].address2,
+          //     'addressesZip': matchedOption.addresses[1].zip,
+          //     'addressesCity': matchedOption.addresses[1].city,
+          //     'addressesProvinceCode': matchedOption.addresses[1].provinceCode,
+          //     'addressesCountry': matchedOption.addresses[1].country,
+          //     'addressesPhone': matchedOption.addresses[1].phone,
+          //   };
+          // }
         });
-          if(selectedShippingAddress[0] !== undefined ){
-            setShippingFirstName(selectedShippingAddress[0].addressesFirstName);
-            setShippingLastName(selectedShippingAddress[0].addressesLastName);
-            setShippingCompany(selectedShippingAddress[0].addressesCompany);
-            setShippingAddress1(selectedShippingAddress[0].addressesaddress1);
-            setShippingAddress2(selectedShippingAddress[0].addressesaddress2);
-            setShippingZip(selectedShippingAddress[0].addressesZip);
-            setShippingCity(selectedShippingAddress[0].addressesCity);
-            setShippingProvince(selectedShippingAddress[0].addressesProvinceCode);
-            setShippingCountry(selectedShippingAddress[0].addressesCountry);
-            setShippingPhone(selectedShippingAddress[0].addressesPhone);
-          } else if (selectedBillingAddress[0] !== undefined){
-            setShippingFirstName(selectedBillingAddress[0].addressesFirstName);
-            setShippingLastName(selectedBillingAddress[0].addressesLastName);
-            setShippingCompany(selectedBillingAddress[0].addressesCompany);
-            setShippingAddress1(selectedBillingAddress[0].addressesaddress1);
-            setShippingAddress2(selectedBillingAddress[0].addressesaddress2);
-            setShippingZip(selectedBillingAddress[0].addressesZip);
-            setShippingCity(selectedBillingAddress[0].addressesCity);
-            setShippingProvince(selectedBillingAddress[0].addressesProvinceCode);
-            setShippingCountry(selectedBillingAddress[0].addressesCountry);
-            setShippingPhone(selectedBillingAddress[0].addressesPhone);
-          } else {
-            setShippingFirstName('');
-            setShippingLastName('');
-            setShippingCompany('');
-            setShippingAddress1('');
-            setShippingAddress2('');
-            setShippingZip('');
-            setShippingCity('');
-            setShippingProvince('');
-            setShippingCountry('');
-            setShippingPhone('');
-        }
       }
       if(ordersCountCustomer === 0){
         var ordersNumber = 'No orders';
@@ -342,11 +317,11 @@ return(
           value={inputValue}
           prefix={<Icon source={SearchMinor} color="inkLighter" />}
           placeholder="Search"
-          autoComplete="nope"
-          ariaAutocomplete='nope'
+          autoComplete="new-password"
+          ariaAutocomplete='whatever'
           id='textFieldAutocomplete'
-          onFocus={() => {
-            let x = document.getElementById('textFieldAutocomplete').ariaAutocomplete;
+          onFocus={(event) => {
+              event.target.autocomplete = "not-autocomplete";
           }}
         />
       );
@@ -362,8 +337,8 @@ return(
         <div><p>{shippingPhone}</p></div>
         </>
       }
-      ContactInformation = {
-
+      contactInformation = {
+        "email": emailCustomer,
       };
       billingAddress = {
         "firstName": addressesFirstName,
@@ -389,10 +364,20 @@ return(
         "country": shippingCountry,
         "phone": shippingPhone
       };
+      var cardDateAndTime =
+        <Card>
+        <div id='DeliveryDate'>
+          <DeliveryDate />
+        </div>
+        <div id='PickUpDate' style={{display:'none'}}>
+          <PickUpDate />
+        </div>
+      </Card>;
       return (
         !props.customerSelectedId ? (
           <>
-            <Layout.Section oneThird>
+            <div style={{width: '100%', display: 'flex'}}>
+            <div style={{width: '50%', marginRight: '10px'}}>
               <Card>
                 <Card.Section>
                   <CreateCustomer 
@@ -429,29 +414,33 @@ return(
                     listTitle="Suggested Customers"
                     loading={loadingCustomers}
                     textField={textField}
-                    autoComplete="nope"
+                    autoComplete="whatever"
+                    autocomplete="whatever"
                   />
                 </Card.Section>
               </Card>
-            </Layout.Section>
-            <Layout.Section oneThird>
+            </div>
+            <div style={{width: '50%', marginLeft: '10px'}}>
               <Card>
                 <Card.Section>
                   <Stack>
                     <Stack.Item fill>
-                      <Subheading fullWidth={true}>
-                      Shipping Address
-                      </Subheading>
+                      {/* <Subheading fullWidth={true}> */}
+                        Recipient Info
+                      {/* </Subheading> */}
                     </Stack.Item>
                   </Stack>
                 </Card.Section>
               </Card>
-            </Layout.Section>
+              {cardDateAndTime}
+            </div>
+            </div>
           </>
         ) : (
           <>
-            <Layout.Section oneThird>
-              <Card
+            <div style={{width: '100%', display: 'flex'}}>
+            <div style={{width: '50%', marginRight: '10px'}}>
+            <Card
                 title="Customer" 
                 actions={[
                   {
@@ -470,6 +459,7 @@ return(
                       setShippingProvince('');
                       setShippingCountry('');
                       setShippingPhone('');
+                      customerId=[]
                     }
                   }
                 ]}
@@ -478,15 +468,15 @@ return(
                 {contactInfo}
                 {infoBillingAddress}
               </Card>
-            </Layout.Section>
-            <Layout.Section oneThird>
-              <Card>
+            </div>
+            <div style={{width: '50%', marginLeft: '10px'}}>
+            <Card>
                 <Card.Section>
                   <Stack>
                     <Stack.Item fill>
-                      <Subheading fullWidth={true}>
-                      Shipping Address
-                      </Subheading>
+                      {/* <Subheading fullWidth={true}> */}
+                        Recipient Info
+                      {/* </Subheading> */}
                     </Stack.Item>
                     <Stack.Item>
                       <ModalShippingAddress
@@ -502,13 +492,28 @@ return(
                         setShippingProvince={setShippingProvince}
                         setShippingCountry={setShippingCountry}
                         setShippingPhone={setShippingPhone}
+                        handleSubmit={props.handleSubmit}
+                        setTotalPrice={props.setTotalPrice}
+                        setTaxPercentage={props.setTaxPercentage}
+                        setTotalTax={props.setTotalTax}
+                        setAddShipping = {props.setAddShipping}
+                        setAddShippingReason = {props.setAddShippingReason}
+                        setTaxLines={props.setTaxLines}
+                        setArrayAvailableShippingRates={props.setArrayAvailableShippingRates}
+                        valueRadioButton={props.valueRadioButton}
+                        setValueRadioButton={props.setValueRadioButton}
                       />
                     </Stack.Item>
-                    {shippingInfo}
+                    
                   </Stack>
+                  {shippingInfo}
                 </Card.Section>
               </Card>
-            </Layout.Section>
+              <Card>
+                {cardDateAndTime}
+              </Card>
+            </div>
+            </div>
           </>
         )
       );
@@ -516,4 +521,4 @@ return(
   </Query>
   )
 }
-export { FindOrCreateCustomer, customerId, billingAddress, shippingAddress }
+export { FindOrCreateCustomer, customerId, billingAddress, shippingAddress, contactInformation, selectedShippingAddress }
